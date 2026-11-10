@@ -9,7 +9,7 @@
     <div class="message-box-scrim"></div>
     <div class="panel message-box" data-class-info="messageBox.level == 'info'" data-class-warning="messageBox.level == 'warning'" data-class-error="messageBox.level == 'error'">
         <div class="panel-header">
-            <svg class="icon-14" data-attr-src="'../Icons/icon-' + messageBox.icon + '.svg'"/>
+            <svg class="icon-14" data-attr-src="'/UI/RmlKit/Icons/icon-' + messageBox.icon + '.svg'"/>
             <span class="panel-title">{{ messageBox.level }}</span>
         </div>
         <div class="message-box-body">
@@ -17,7 +17,7 @@
             <p class="small text-secondary">{{ messageBox.text }}</p>
         </div>
         <div class="message-box-actions">
-            <button class="button" autofocus data-event-click="closeMessageBox()"><svg class="icon-16" src="../Icons/icon-check.svg"/><span>OK</span></button>
+            <button class="button" autofocus data-event-click="closeMessageBox()"><svg class="icon-16" src="/UI/RmlKit/Icons/icon-check.svg"/><span>OK</span></button>
         </div>
     </div>
 </body>
