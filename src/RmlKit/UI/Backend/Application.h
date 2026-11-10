@@ -95,7 +95,7 @@ private:
     Tooltip tooltip;
     MessageBoxService messageBoxes;
 #ifndef NDEBUG
-    DevTools devTools;
+    std::optional<DevTools> devTools;
 #endif
     bool running = true;
     bool framePending = true;

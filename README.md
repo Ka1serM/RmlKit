@@ -44,9 +44,11 @@ for that platform.
 
 ## Usage
 
-Add RmlKit to the app before the app's own targets, and embed the UI:
+Add RmlKit to the app before the app's own targets, and embed the UI. `EmbeddedResources.cmake` enables the assembler
+(or the resource compiler on Windows), which works only in the top-level CMakeLists.txt:
 
 ```cmake
+include(external/RmlKit/cmake/EmbeddedResources.cmake)
 set(RMLKIT_APP_ID "dev.example.app")
 set(RMLKIT_UI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/App")
 set(RMLKIT_ASSET_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")

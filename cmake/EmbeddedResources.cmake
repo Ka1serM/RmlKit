@@ -1,3 +1,6 @@
+#! enable_language works only at file scope, so the app includes this file in its top-level CMakeLists.txt.
+include_guard(GLOBAL)
+
 if(WIN32)
     enable_language(RC)
 else()
@@ -75,5 +78,5 @@ ${data}
     target_include_directories(${target} INTERFACE "${output_dir}")
     target_sources(RmlKit PRIVATE "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../src/RmlKit/UI/Backend/EmbeddedResourcesDesktop.cpp")
     target_include_directories(RmlKit PRIVATE "${output_dir}")
-    target_sources(RmlKit INTERFACE "$<TARGET_OBJECTS:${target}>")
+    target_link_libraries(RmlKit INTERFACE "$<TARGET_OBJECTS:${target}>")
 endfunction()

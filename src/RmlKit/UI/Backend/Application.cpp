@@ -33,12 +33,10 @@ Application::Application()
     : window(PRODUCT_NAME, 1600, 1056), rml(window), context(createContext(window.pixelSize())), model(*context),
       logRoute(rml.getSystem(), model), chrome(*context, model, window.getNative(), [this] { running = false; }),
       linkDrag(*context, model, window.getNative()), fileDrop(*context, window.getNative()), router(*context, model), tooltip(*context),
-      messageBoxes(*context, model)
+      messageBoxes(*context, model) {
 #ifndef NDEBUG
-      ,
-      devTools(*context, router)
+    devTools.emplace(*context, router);
 #endif
-{
     context->SetDensityIndependentPixelRatio(SDL_GetWindowDisplayScale(window.getNative()));
     wakeEvent = SDL_RegisterEvents(1);
     if (wakeEvent == 0)
@@ -66,6 +64,10 @@ double Application::nextFrameDelay() const {
 }
 
 void Application::closeDocuments() {
+#ifndef NDEBUG
+    //! The debugger owns documents of the context, and RmlUi crashes when they unload before it shuts down.
+    devTools.reset();
+#endif
     context->UnloadAllDocuments();
     //! RmlUi releases unloaded documents, and with them their elements, in the next update.
     context->Update();
@@ -123,7 +125,7 @@ void Application::dispatch(SDL_Event& event) {
     linkDrag.handle(event);
     fileDrop.handle(event);
 #ifndef NDEBUG
-    if (devTools.handle(event))
+    if (devTools && devTools->handle(event))
         return;
 #endif
     switch (event.type) {
