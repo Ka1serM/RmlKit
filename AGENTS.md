@@ -94,6 +94,13 @@ conflict yourself.
 - Preserve a small API surface. Do not add a second spelling for the same
   concept merely to avoid updating call sites.
 
+## Documentation
+
+- Keep a README minimal. It has only these sections: a short description, a
+  basic usage or API example, and the dependencies. Do not put internal rules
+  (comments, style, layout, hooks, contribution rules) or the names of the
+  projects that use it into a README. Internal rules go into AGENTS.md.
+
 ## Project style
 
 - Enforce the style guidelines of the current project in every change. They
@@ -122,6 +129,9 @@ conflict yourself.
   game texture loader.
 - Build and repository tools go into the top-level `tools/` folder, not into a
   plugin or module folder.
+- Activate the pre-commit hook once in each clone:
+  `git config core.hooksPath tools/githooks`. It formats the staged files with
+  clang-format and runs the comment check and clang-tidy. Do not bypass it.
 - Run `tools/check_comments.py` before you finish a change. Fix every
   violation that it reports in the files that you changed.
 
