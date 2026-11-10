@@ -1,0 +1,18 @@
+    <div class="view" id="about" nav="about" crumb="About">
+        <div class="page example">
+            <div class="page-header">
+                <div class="page-header-title">
+                    <p class="page-title">About</p>
+                    <p class="page-subtitle">{{ productName }} runs on {{ demo.platform }}.</p>
+                </div>
+            </div>
+            <section class="panel example-panel">
+                <div class="example-body">
+                    <svg class="example-logo" src="../../assets/icon.svg"/>
+                    <p class="body-regular">{{ productName }} is the smallest app that uses RmlKit. The same sources build a desktop app for Linux and Windows and a web page.</p>
+                    <p class="small text-secondary">The router loads each view from UI/Views when it first shows it. The view's crumb attribute names it in the title bar.</p>
+                    <p class="small text-secondary">On Linux, the app adds its launcher and icon to the desktop menu when it starts.</p>
+                </div>
+            </section>
+        </div>
+    </div>

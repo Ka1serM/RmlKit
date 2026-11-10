@@ -3,7 +3,7 @@ project(RmlKit LANGUAGES C CXX)
 
 include(cmake/CompilerOptions.cmake)
 
-option(RMLKIT_VIDEO "Build the video player and the video element, with FFmpeg" ON)
+option(RMLKIT_VIDEO "Build the video player and the video element, with FFmpeg" OFF)
 set(RMLKIT_APP_ID "" CACHE STRING "The app id. On Wayland, it is the name of the desktop launcher.")
 set(RMLKIT_UI_SOURCE_DIR "" CACHE PATH "The folder that holds UI/. A debug desktop build reads the UI from it.")
 set(RMLKIT_ASSET_SOURCE_DIR "" CACHE PATH "The folder that holds assets/. A debug desktop build reads the assets from it.")

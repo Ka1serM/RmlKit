@@ -26,6 +26,7 @@ RmlRuntime::RmlRuntime(Window& window)
         fatal("RmlUi failed to initialize");
     Rml::Factory::RegisterElementInstancer("virtual-grid", &virtualGrid);
     Rml::Factory::RegisterElementInstancer("spinner", &spinner);
+    Rml::Factory::RegisterElementInstancer("splitter", &splitter);
     Rml::Factory::RegisterElementInstancer("rename-input", &renameInput);
     Rml::Factory::RegisterDecoratorInstancer("texture-loading", &textureLoading);
 #if RMLKIT_VIDEO

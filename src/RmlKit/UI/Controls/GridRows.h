@@ -20,6 +20,11 @@ inline constexpr float wideThumbRatio = 104.0f / 283.0f;
 inline constexpr GridLayout wideCardLayout{
     .minItemWidth = 238, .heightPerWidth = wideThumbRatio, .fixedHeight = 52 - 2 * wideThumbRatio, .headerHeight = 0, .gap = 12};
 
+//! A list is a grid of one column: no width fits two items, so every row holds one item of rowHeight dp.
+constexpr GridLayout listLayout(const float rowHeight) {
+    return {.minItemWidth = 1e9f, .heightPerWidth = 0, .fixedHeight = rowHeight, .headerHeight = 0, .gap = 0};
+}
+
 struct GridExtent {
     float height = 0;
     float widthPercent = 0;

@@ -1,0 +1,70 @@
+    <div class="view" id="home" nav="home" crumb="Home">
+        <div class="page example">
+            <div class="page-header">
+                <div class="page-header-title">
+                    <p class="page-title">Home</p>
+                    <p class="page-subtitle">Each panel shows one part of the RmlKit API.</p>
+                </div>
+            </div>
+
+            <div class="example-grid">
+                <section class="panel example-panel">
+                    <div class="panel-header"><p class="panel-title">Data binding</p></div>
+                    <div class="example-body">
+                        <p class="small text-secondary">The buttons call the event demoAdd. It changes the model, and the view shows the new value.</p>
+                        <p class="stat-value">{{ demo.count }}</p>
+                        <div class="row">
+                            <button class="button" data-event-click="demoAdd(-1)"><svg class="icon-14" src="../../assets/icons/icon-minus.svg"/><span>Less</span></button>
+                            <button class="button" data-event-click="demoAdd(1)"><svg class="icon-14" src="../../assets/icons/icon-plus.svg"/><span>More</span></button>
+                            <button class="button ghost" data-if="demo.count != 0" data-event-click="demoAdd(0 - demo.count)"><span>Reset</span></button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel example-panel">
+                    <div class="panel-header"><p class="panel-title">Text field and message box</p></div>
+                    <div class="example-body">
+                        <p class="small text-secondary">The field writes into demo.name as you type. The button opens RmlKit's message box.</p>
+                        <div class="input">
+                            <input class="input-field" type="text" placeholder="Your name" data-value="demo.name"/>
+                        </div>
+                        <p class="small" data-if="demo.name != ''">Hello, {{ demo.name }}.</p>
+                        <div class="row">
+                            <button class="button primary" data-event-click="demoGreet()"><span>Say hello</span></button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel example-panel">
+                    <div class="panel-header"><p class="panel-title">Background job</p></div>
+                    <div class="example-body">
+                        <p class="small text-secondary">Dispatcher::run starts the job on a worker thread. Dispatcher::postUi brings each step back to the UI thread.</p>
+                        <div class="progress"><div class="progress-fill info" data-style-width="demo.percent + '%'"></div></div>
+                        <p class="small text-muted">{{ demo.percent }}%</p>
+                        <div class="row">
+                            <button class="button" data-if="!demo.working" data-event-click="demoStartJob()"><svg class="icon-14" src="../../assets/icons/icon-play.svg"/><span>Start</span></button>
+                            <button class="button danger" data-if="demo.working" data-event-click="demoStopJob()"><svg class="icon-14" src="../../assets/icons/icon-stop.svg"/><span>Stop</span></button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel example-panel">
+                    <div class="panel-header">
+                        <p class="panel-title">Log</p>
+                        <p class="panel-count">{{ logLines.size }}</p>
+                    </div>
+                    <div class="example-body">
+                        <p class="small text-secondary">Model::report adds a line to the log, and to the console in a browser.</p>
+                        <div class="row">
+                            <button class="button" data-event-click="demoReport('info')"><svg class="icon-14" src="../../assets/icons/icon-bell.svg"/><span>Note</span></button>
+                            <button class="button" data-event-click="demoReport('warning')"><span>Warning</span></button>
+                            <button class="button danger" data-event-click="demoReport('error')"><span>Error</span></button>
+                        </div>
+                        <div class="example-log scroll-y">
+                            <p class="example-log-line mono" data-for="line : logLines"><span class="example-log-level" data-class-text-warning="line.level == 'WARN'" data-class-text-danger="line.level == 'ERR'" data-class-text-success="line.level == 'DONE'">{{ line.level }}</span> {{ line.message }}</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>

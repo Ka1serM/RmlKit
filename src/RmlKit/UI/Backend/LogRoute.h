@@ -24,6 +24,7 @@ public:
 private:
     Model* model = nullptr;
     std::unique_ptr<SDL_Cursor, decltype(&SDL_DestroyCursor)> horizontalResize{SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE), &SDL_DestroyCursor};
+    std::unique_ptr<SDL_Cursor, decltype(&SDL_DestroyCursor)> verticalResize{SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE), &SDL_DestroyCursor};
 };
 
 class LogRoute {

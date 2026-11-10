@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=@RMLKIT_DESKTOP_NAME@
+Comment=@RMLKIT_DESKTOP_COMMENT@
+Exec={{EXECUTABLE}}
+Icon={{ICON}}
+StartupWMClass=@RMLKIT_APP_ID@
+Terminal=false
+Categories=@RMLKIT_DESKTOP_CATEGORIES@
+X-@RMLKIT_DESKTOP_NAME@-Generated=true

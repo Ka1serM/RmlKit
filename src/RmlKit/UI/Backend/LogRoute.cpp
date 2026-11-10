@@ -46,9 +46,11 @@ ReportLevel reportLevel(const int ffmpegLevel) {
 }
 
 void LogSystemInterface::SetMouseCursor(const Rml::String& cursorName) {
-    if (cursorName != "ew-resize")
-        return SystemInterface_SDL::SetMouseCursor(cursorName);
-    SDL_SetCursor(horizontalResize.get());
+    if (cursorName == "ew-resize")
+        return static_cast<void>(SDL_SetCursor(horizontalResize.get()));
+    if (cursorName == "ns-resize")
+        return static_cast<void>(SDL_SetCursor(verticalResize.get()));
+    SystemInterface_SDL::SetMouseCursor(cursorName);
 }
 
 bool LogSystemInterface::LogMessage(const Rml::Log::Type type, const Rml::String& message) {

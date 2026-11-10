@@ -1,0 +1,36 @@
+.example-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16dp;
+}
+
+.example-panel {
+    flex: 1 1 360dp;
+    min-width: 320dp;
+}
+
+.example-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12dp;
+    padding: 16dp;
+}
+
+.example-log {
+    height: 120dp;
+    padding: 8dp;
+    background-color: #1c1c1c;
+    border-radius: 4dp;
+}
+
+.example-log-line { font-size: 12dp; }
+
+.example-log-level { color: #707070; }
+
+.example-logo {
+    width: 64dp;
+    height: 64dp;
+}
+
+/*! RmlKit sizes .wordmark for a wide logo; this app's mark is square. */
+.example-mark { width: 20dp; }

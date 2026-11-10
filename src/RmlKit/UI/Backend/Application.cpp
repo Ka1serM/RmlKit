@@ -11,6 +11,7 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_video.h>
 
+#include "RmlKit/UI/Backend/DesktopEntry.h"
 #include "RmlKit/UI/Backend/Fatal.h"
 
 namespace RmlKit::UI {
@@ -41,6 +42,8 @@ Application::Application()
     if (wakeEvent == 0)
         fatal(std::format("SDL_RegisterEvents failed: {}", SDL_GetError()));
     watchResize();
+    if (auto installed = installDesktopEntry(); !installed)
+        model.report(ReportLevel::Warning, "desktop", std::format("The launcher is not installed: {}", installed.error().message));
 }
 
 std::unique_ptr<Rml::Context, Application::ContextRemover> Application::createContext(const Rml::Vector2i size) {

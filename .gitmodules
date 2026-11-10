@@ -20,3 +20,6 @@
 [submodule "external/oneTBB"]
 	path = external/oneTBB
 	url = https://github.com/uxlfoundation/oneTBB.git
+[submodule "external/emsdk"]
+	path = external/emsdk
+	url = https://github.com/emscripten-core/emsdk.git

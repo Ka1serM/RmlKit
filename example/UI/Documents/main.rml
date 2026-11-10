@@ -1,0 +1,65 @@
+<rml>
+<head>
+    <title>Main</title>
+    <link type="text/rcss" href="../RmlKit/Styles/theme.rcss"/>
+    <link type="text/rcss" href="../RmlKit/Styles/components.rcss"/>
+    <link type="text/rcss" href="../RmlKit/Styles/window.rcss"/>
+    <link type="text/rcss" href="../Styles/example.rcss"/>
+</head>
+<!--! The router opens this document with the data model "app" and shows the views of UI/Views inside #views. -->
+<body id="main" data-model="app">
+    <header class="title-bar">
+        <div class="window-drag-region"></div>
+        <div class="title-left">
+            <svg class="wordmark example-mark" src="../../assets/icon.svg"/>
+            <span class="title-card">{{ productName }}</span>
+            <div class="breadcrumb">
+                <span class="crumb-separator">/</span>
+                <span class="crumb current">{{ navigation.crumb }}</span>
+            </div>
+        </div>
+        <div class="title-right">
+            <button data-if="windowButtons" class="title-button window-button" data-event-click="minimizeWindow()"><svg class="icon-14 icon-primary" src="../../assets/icons/icon-minus.svg"/></button>
+            <button data-if="windowButtons" class="title-button window-button" data-event-click="toggleMaximized()"><svg class="icon-14 icon-primary" src="../../assets/icons/icon-square.svg"/></button>
+            <button data-if="windowButtons" class="title-button window-button close" data-event-click="closeWindow()"><svg class="icon-14 icon-primary" src="../../assets/icons/icon-x.svg"/></button>
+        </div>
+    </header>
+
+    <div class="app-body maximize-area">
+        <nav class="nav-rail">
+            <button class="nav-item" nav="home" tooltip="Home" data-event-click="showView('home')">
+                <div class="nav-indicator"></div>
+                <svg class="icon-20" src="../../assets/icons/icon-house.svg"/>
+                <span>Home</span>
+            </button>
+            <div class="nav-spacer"></div>
+            <button class="nav-item" nav="about" tooltip="About" data-event-click="showView('about')">
+                <div class="nav-indicator"></div>
+                <svg class="icon-20" src="../../assets/icons/icon-info.svg"/>
+                <span>About</span>
+            </button>
+        </nav>
+        <main class="content" id="views"></main>
+    </div>
+
+    <footer class="status-bar">
+        <div class="status-left">
+            <div class="status-item">
+                <div class="status-dot online"></div>
+                <span class="status-name">{{ demo.platform }}</span>
+            </div>
+            <div class="status-item" data-if="logs.warningCount + logs.errorCount > 0">
+                <span class="status-mono">{{ logs.warningCount }} warnings, {{ logs.errorCount }} errors</span>
+            </div>
+        </div>
+        <div class="status-right">
+            <div class="status-item" data-if="demo.working">
+                <spinner class="icon-12 icon-info"/>
+                <span class="status-name">Working</span>
+                <div class="progress status-progress"><div class="progress-fill info" data-style-width="demo.percent + '%'"></div></div>
+            </div>
+        </div>
+    </footer>
+    <div id="tooltip" class="tooltip floating"></div>
+</body>
+</rml>

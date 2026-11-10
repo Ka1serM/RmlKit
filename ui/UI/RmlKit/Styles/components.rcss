@@ -272,6 +272,7 @@ input[type=checkbox]:hover { border-color: #707070; }
 
 input[type=checkbox]:disabled { border-color: #4a4a4a; }
 
+/*! RmlUi resolves an svg() decorator against the document, not the stylesheet, so these paths assume a document in UI/Documents. */
 input[type=checkbox]:checked {
     background-color: #f2f2f2;
     border-color: #f2f2f2;
@@ -1223,3 +1224,12 @@ video.paused .video-toggle .video-pause-icon { display: none; }
     padding: 0 8dp;
     border-bottom: 1dp #2f2f2f;
 }
+
+/*! <splitter>: a thin handle between two panels; "vertical" sits between columns, "horizontal" between rows. */
+splitter { display: block; flex: 0 0 auto; drag: drag; }
+
+splitter.vertical { width: 6dp; margin: 0 -2dp; cursor: ew-resize; }
+
+splitter.horizontal { height: 6dp; margin: -2dp 0; cursor: ns-resize; }
+
+splitter:hover, splitter:active { background-color: #ffffff14; }

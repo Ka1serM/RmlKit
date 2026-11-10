@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<base href="/">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>@RMLKIT_TITLE@</title>
+@RMLKIT_ICON_LINKS@
+<style>
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #141414; }
+#canvas { display: block; width: 100%; height: 100%; }
+#loader { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; background: #141414; color: #ffffff; font: 14px system-ui, sans-serif; transition: opacity 0.3s; }
+#loader.done { opacity: 0; pointer-events: none; }
+#loader h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: 0.02em; }
+#track { position: relative; width: min(320px, 70vw); height: 4px; overflow: hidden; border-radius: 2px; background: #2b2b2b; }
+#bar { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 2px; background: #f2f2f2; transition: width 0.2s; }
+#loader.busy #bar { width: 30%; transition: none; animation: busy 1.2s ease-in-out infinite; }
+@keyframes busy { from { left: -30%; } to { left: 100%; } }
+#status { min-height: 1.4em; max-width: min(480px, 85vw); color: #b3b3b3; text-align: center; white-space: pre-wrap;
+    font-variant-numeric: tabular-nums; }
+#status button { margin: 4px; padding: 8px 14px; border: 1px solid #4a4a4a; border-radius: 6px; background: #2b2b2b;
+    color: #ffffff; font: inherit; cursor: pointer; }
+#status button:first-child { border-color: #f2f2f2; background: #f2f2f2; color: #111111; }
+#loader.error #track { display: none; }
+#loader.error #status { color: #ff4655; }
+#link-drag { position: fixed; cursor: grab; }
+</style>
+</head>
+<body>
+<canvas id="canvas" tabindex="0" oncontextmenu="event.preventDefault()"></canvas>
+<a id="link-drag" draggable="true" hidden></a>
+<div id="loader">
+    <h1>@RMLKIT_TITLE@</h1>
+    <div id="track"><div id="bar"></div></div>
+    <div id="status">Downloading…</div>
+</div>
+<script>
+const loader = document.getElementById('loader');
+const bar = document.getElementById('bar');
+const status = document.getElementById('status');
+function showBrowserError(error) {
+    loader.className = 'error';
+    status.textContent = String(error);
+    console.error(error);
+}
+window.addEventListener('error', event => showBrowserError(event.message));
+window.addEventListener('unhandledrejection', event => showBrowserError(event.reason));
+function showStep(text) {
+    if (loader.className === 'error') return;
+    loader.className = 'busy';
+    bar.style.width = '';
+    status.textContent = text;
+}
+const downloadSize = __RMLKIT_DOWNLOAD_SIZE__;
+const buildVersion = '__RMLKIT_BUILD_VERSION__';
+const downloadedBytes = {wasm: 0, data: 0};
+function showDownload() {
+    if (loader.className) return;
+    const fraction = Math.min((downloadedBytes.wasm + downloadedBytes.data) / downloadSize, 1);
+    if (fraction === 1) return showStep('Starting…');
+    bar.style.width = `${fraction * 100}%`;
+    status.textContent = `Downloading… ${Math.floor(fraction * 100)}%`;
+}
+const fetchResource = window.fetch;
+window.fetch = async (resource, options) => {
+    const response = await fetchResource(resource, options);
+    if (!response.ok || !new URL(response.url).pathname.endsWith('.wasm')) return response;
+    const reader = response.clone().body.getReader();
+    (async () => {
+        for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
+            downloadedBytes.wasm += chunk.value.byteLength;
+            showDownload();
+        }
+    })().catch(showBrowserError);
+    return response;
+};
+var Module = {
+    canvas: document.getElementById('canvas'),
+    printErr: text => console.error(text),
+    noInitialRun: true,
+    locateFile: (path, directory) => `${directory}${path}?v=${buildVersion}`,
+    setStatus: text => {
+        const progress = /\((\d+)\/\d+\)/.exec(text);
+        if (!progress) return;
+        downloadedBytes.data = Number(progress[1]);
+        showDownload();
+    },
+    //! An app's --pre-js can set Module.rmlkitStart(status) to prepare the file system, and must call Module.callMain() at its end.
+    onRuntimeInitialized: () => {
+        showStep('Starting…');
+        const start = Module.rmlkitStart || (async () => Module.callMain());
+        start(status)
+            .then(() => { if (loader.className !== 'error') loader.className = 'done'; })
+            .catch(showBrowserError);
+    },
+};
+<!--! SDL cancels the browser's action of every key that the canvas gets, and cannot read the clipboard. -->
+function isBrowserKey(event) {
+    const key = event.key.toLowerCase();
+    const command = event.ctrlKey || event.metaKey;
+    if (event.key === 'F12' || event.key === 'F5' || (command && key === 'r')) return true;
+    if (command && key === 'v') return true;
+    return command && (event.shiftKey || event.altKey) && ['i', 'j', 'c'].includes(key);
+}
+document.addEventListener('keydown', event => {
+    if (document.activeElement === Module.canvas && isBrowserKey(event)) event.stopImmediatePropagation();
+}, true);
+document.addEventListener('paste', event => {
+    if (document.activeElement !== Module.canvas) return;
+    const text = event.clipboardData.getData('text/plain');
+    if (!text) return;
+    event.preventDefault();
+    Module.ccall('rmlkit_paste', null, ['string'], [text]);
+}, true);
+//! The app copies a frame after the click or key that asked for it. The Clipboard API takes that while the page keeps the user activation, but needs a secure context; the copy command works on any page during a user gesture. A copy that both refuse waits for the next click or key, which is a gesture again.
+let pendingCopy = null;
+function copyByCommand(text) {
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    Object.assign(area.style, {position: 'fixed', left: '-9999px', top: '0', opacity: '0'});
+    const focused = document.activeElement;
+    document.body.appendChild(area);
+    area.select();
+    let copied = false;
+    try { copied = document.execCommand('copy'); } catch { copied = false; }
+    area.remove();
+    if (focused && focused.focus) focused.focus({preventScroll: true});
+    return copied;
+}
+function finishPendingCopy() {
+    if (pendingCopy !== null && copyByCommand(pendingCopy)) pendingCopy = null;
+}
+Module.rmlkitCopy = text => {
+    pendingCopy = text;
+    const byCommand = () => { if (pendingCopy === text && copyByCommand(text)) pendingCopy = null; };
+    if (!navigator.clipboard || !window.isSecureContext) {
+        byCommand();
+        return;
+    }
+    navigator.clipboard.writeText(text)
+        .then(() => { if (pendingCopy === text) pendingCopy = null; })
+        .catch(byCommand);
+};
+document.addEventListener('click', finishPendingCopy, true);
+document.addEventListener('keyup', finishPendingCopy, true);
+const linkDrag = document.getElementById('link-drag');
+Module.rmlkitShowLinkDrag = (x, y, width, height, link) => {
+    const canvas = Module.canvas.getBoundingClientRect();
+    Object.assign(linkDrag.style, {left: `${canvas.left + x}px`, top: `${canvas.top + y}px`, width: `${width}px`, height: `${height}px`});
+    linkDrag.href = link;
+    linkDrag.hidden = false;
+};
+Module.rmlkitHideLinkDrag = () => { linkDrag.hidden = true; };
+linkDrag.addEventListener('mouseleave', () => { linkDrag.hidden = true; });
+linkDrag.addEventListener('dragend', () => { linkDrag.hidden = true; });
+linkDrag.addEventListener('click', event => event.preventDefault());
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>

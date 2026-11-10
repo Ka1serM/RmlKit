@@ -10,6 +10,7 @@
 #include "RmlKit/UI/Backend/Window.h"
 #include "RmlKit/UI/Controls/RenameInput.h"
 #include "RmlKit/UI/Controls/SpinnerElement.h"
+#include "RmlKit/UI/Controls/SplitterElement.h"
 #include "RmlKit/UI/Controls/TextureLoadingDecorator.h"
 #include "RmlKit/UI/Controls/VirtualGridElement.h"
 
@@ -45,6 +46,7 @@ private:
     FontEngineInterfaceHarfBuzz fonts;
     Rml::ElementInstancerGeneric<VirtualGridElement> virtualGrid;
     Rml::ElementInstancerGeneric<SpinnerElement> spinner;
+    Rml::ElementInstancerGeneric<SplitterElement> splitter;
     Rml::ElementInstancerGeneric<RenameInput> renameInput;
     TextureLoadingDecoratorInstancer textureLoading;
 #if RMLKIT_VIDEO
