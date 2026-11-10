@@ -43,7 +43,7 @@ void FileDialog::openFile(SDL_Window*, const std::span<const FileFilter> filters
 
 extern "C" EMSCRIPTEN_KEEPALIVE void rmlkit_dialog_chosen(const char* path) {
     RmlKit::UI::FileDialog::Chosen chosen = std::move(RmlKit::UI::pending);
-    chosen(Core::pathFromUtf8(path));
+    chosen(RmlKit::Core::pathFromUtf8(path));
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void rmlkit_dialog_cancelled() {
