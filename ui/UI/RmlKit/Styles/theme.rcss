@@ -1,0 +1,104 @@
+body, div, header, main, footer, section, p, label, button {
+    display: block;
+}
+
+body {
+    font-family: Google Sans;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 13dp;
+    color: #ffffff;
+    background-color: #1c1c1c;
+}
+
+scrollbarvertical sliderbar {
+    background-color: #4a4a4a;
+    border-radius: 4dp;
+}
+
+scrollbarvertical sliderbar:hover {
+    background-color: #707070;
+}
+
+.title-bar {
+    background-color: #141414;
+    border-bottom: 1dp #2f2f2f;
+}
+
+.breadcrumb {
+    font-size: 12dp;
+    color: #b3b3b3;
+}
+
+.crumb-separator {
+    color: #707070;
+}
+
+.crumb.current {
+    color: #ffffff;
+}
+
+.crumb-detail {
+    margin-left: 4dp;
+    font-family: Google Sans Code;
+    font-size: 11dp;
+    color: #707070;
+}
+
+.title-button:hover {
+    background-color: #2b2b2b;
+}
+
+.title-button.close:hover {
+    background-color: #c42b1c;
+}
+
+.display {
+    font-size: 32dp;
+    font-weight: bold;
+}
+
+.body-secondary {
+    font-size: 13dp;
+    font-weight: normal;
+    color: #b3b3b3;
+}
+
+.caps-bold {
+    font-size: 11dp;
+    font-weight: bold;
+    letter-spacing: 0.66dp;
+    text-transform: uppercase;
+    color: #707070;
+}
+
+.field-label {
+    font-size: 11dp;
+    letter-spacing: 0.66dp;
+    text-transform: uppercase;
+    color: #707070;
+}
+
+.status-bar {
+    background-color: #141414;
+    border-top: 1dp #2f2f2f;
+}
+
+.status-name {
+    font-size: 12dp;
+    color: #b3b3b3;
+}
+
+.status-name.muted {
+    color: #707070;
+}
+
+.status-mono, .status-right {
+    font-family: Google Sans Code;
+    font-size: 11dp;
+    color: #707070;
+}
+
+.status-mono.secondary {
+    color: #b3b3b3;
+}

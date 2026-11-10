@@ -1,3 +1,4 @@
+cmake_path(SET rmlkit_ui_dir NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../ui")
 file(GLOB_RECURSE rmlkit_sources CONFIGURE_DEPENDS RmlKit/*.cpp)
 #! rmlkit_add_resources adds the resource reader with the index of the app's resources.
 list(FILTER rmlkit_sources EXCLUDE REGEX "/EmbeddedResourcesDesktop\\.cpp$")
@@ -19,7 +20,7 @@ target_compile_definitions(RmlKit
     PUBLIC PLATFORM_WINDOWS=$<BOOL:${PLATFORM_WINDOWS}> PLATFORM_LINUX=$<BOOL:${PLATFORM_LINUX}> PLATFORM_WEB=$<BOOL:${PLATFORM_WEB}>
         RMLKIT_VIDEO=$<BOOL:${RMLKIT_VIDEO}>
     PRIVATE PRODUCT_NAME="${CMAKE_PROJECT_NAME}" PRODUCT_VERSION="${CMAKE_PROJECT_VERSION}" APP_ID="${RMLKIT_APP_ID}"
-        UI_SOURCE_DIR="${RMLKIT_UI_SOURCE_DIR}" ASSET_SOURCE_DIR="${RMLKIT_ASSET_SOURCE_DIR}")
+        UI_SOURCE_DIR="${RMLKIT_UI_SOURCE_DIR}" ASSET_SOURCE_DIR="${RMLKIT_ASSET_SOURCE_DIR}" KIT_UI_DIR="${rmlkit_ui_dir}")
 target_precompile_headers(RmlKit PRIVATE <RmlUi/Core/Types.h> <RmlUi/Core/DataModelHandle.h> <algorithm> <expected> <format>
     <memory> <optional> <string> <string_view> <utility> <vector> "${CMAKE_CURRENT_SOURCE_DIR}/RmlKit/Core/StdGaps.h")
 if(RMLKIT_VIDEO)

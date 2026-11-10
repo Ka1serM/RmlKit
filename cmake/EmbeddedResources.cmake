@@ -7,10 +7,16 @@ else()
     enable_language(ASM)
 endif()
 
-#! RmlKit's resource reader includes the index, so it compiles only in an app that embeds its resources.
+#! RmlKit's own UI: the base styles, the message box, its icons and the fonts, under UI/RmlKit/.
+cmake_path(ABSOLUTE_PATH CMAKE_CURRENT_LIST_DIR NORMALIZE OUTPUT_VARIABLE rmlkit_cmake_dir)
+cmake_path(GET rmlkit_cmake_dir PARENT_PATH RMLKIT_UI_DIR)
+string(APPEND RMLKIT_UI_DIR "/ui")
+file(GLOB_RECURSE RMLKIT_UI_FILES CONFIGURE_DEPENDS "${RMLKIT_UI_DIR}/UI/RmlKit/*")
+
+#! The resource reader includes the index, so it compiles only in an app that embeds RmlKit's UI and its own files.
 function(rmlkit_add_resources target)
     set(paths "")
-    foreach(argument IN LISTS ARGN)
+    foreach(argument IN ITEMS ROOT "${RMLKIT_UI_DIR}" ${RMLKIT_UI_FILES} ${ARGN})
         if(argument STREQUAL "ROOT")
             set(expect_root TRUE)
         elseif(expect_root)

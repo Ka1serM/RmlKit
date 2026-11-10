@@ -7,6 +7,8 @@ namespace RmlKit::UI {
 namespace {
 
 Rml::String sourcePath(const Rml::String& path) {
+    if (path.starts_with("UI/RmlKit/"))
+        return Rml::String(KIT_UI_DIR) + "/" + path;
     const char* root = path.starts_with("UI/") ? UI_SOURCE_DIR : ASSET_SOURCE_DIR;
     return Rml::String(root) + "/" + path;
 }

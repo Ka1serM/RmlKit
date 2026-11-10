@@ -1,0 +1,37 @@
+.message-box-scrim {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #0000009e;
+}
+
+.message-box {
+    position: absolute;
+    left: 50%;
+    top: 30%;
+    width: 440dp;
+    margin-left: -220dp;
+    border-color: #2f2f2f;
+    background-color: #1c1c1c;
+    box-shadow: #000000b3 0 16dp 48dp 0;
+}
+
+.message-box .panel-header { background-color: #141414; }
+
+.message-box.info .panel-header svg { image-color: #2ca7f6; }
+
+.message-box.warning .panel-header svg { image-color: #f5c242; }
+
+.message-box.error .panel-header svg { image-color: #ff4655; }
+
+.message-box-body { display: flex; flex-direction: column; gap: 6dp; padding: 16dp 12dp; }
+
+.message-box-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8dp;
+    padding: 12dp;
+    border-top: 1dp #2f2f2f;
+}

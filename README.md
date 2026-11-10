@@ -26,7 +26,9 @@ public:
 ```
 
 The app binds its view models into `getModel()`. The UI has `UI/Documents/main.rml` with the elements `views` and
-`tooltip`, one `UI/Views/<name>.rml` for each view of the router, and the fonts in `assets/fonts/`. The browser page
+`tooltip`, and one `UI/Views/<name>.rml` for each view of the router. RmlKit embeds its own `UI/RmlKit/`: the
+base styles, the message box, and the Google Sans fonts. A document links them first, such as
+`../RmlKit/Styles/theme.rcss`, then the app's styles. The browser page
 sets `Module.rmlkitChoose`, `Module.rmlkitCopy`, `Module.rmlkitShowLinkDrag` and `Module.rmlkitHideLinkDrag`, and
 calls `rmlkit_paste` with pasted text.
 

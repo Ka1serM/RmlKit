@@ -15,7 +15,7 @@ namespace RmlKit::UI {
 
 namespace {
 
-constexpr const char* documentPath = "UI/Documents/message-box.rml";
+constexpr const char* documentPath = "UI/RmlKit/Documents/message-box.rml";
 constexpr const char* documentId = "message-box";
 
 }
