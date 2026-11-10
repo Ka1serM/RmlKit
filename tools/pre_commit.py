@@ -114,7 +114,7 @@ def check_tidy(files: list[str]) -> bool:
             commands = [{"directory": web_database[unit]["directory"],
                          "file": web_database[unit]["file"],
                          "arguments": web_entry_arguments(web_database[unit])} for unit in web_units]
-            with tempfile.TemporaryDirectory(prefix="rmlkit-clang-tidy-") as directory:
+            with tempfile.TemporaryDirectory(prefix=f"{ROOT.name.lower()}-clang-tidy-") as directory:
                 Path(directory, "compile_commands.json").write_text(json.dumps(commands), encoding="utf-8")
                 results += list(pool.map(lambda unit: run_tidy(binary, Path(directory), unit), web_units))
     for result in results:
