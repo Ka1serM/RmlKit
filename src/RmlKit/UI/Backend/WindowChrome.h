@@ -2,12 +2,12 @@
 
 #include <functional>
 
-#include "RmlKit/Core/StdGaps.h"
-
 #include <RmlUi/Core/DataModelHandle.h>
 #include <RmlUi/Core/Event.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_video.h>
+
+#include "RmlKit/Core/StdGaps.h"
 
 namespace Rml {
 class Context;

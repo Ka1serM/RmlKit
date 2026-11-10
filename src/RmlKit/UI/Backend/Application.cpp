@@ -30,10 +30,9 @@ Application::Sdl::~Sdl() {
 }
 
 Application::Application()
-    : window(PRODUCT_NAME, 1600, 1056), rml(window), context(createContext(window.pixelSize())), model(*context),
-      logRoute(rml.getSystem(), model), chrome(*context, model, window.getNative(), [this] { running = false; }),
-      linkDrag(*context, model, window.getNative()), fileDrop(*context, window.getNative()), router(*context, model), tooltip(*context),
-      messageBoxes(*context, model) {
+    : window(PRODUCT_NAME, 1600, 1056), rml(window), context(createContext(window.pixelSize())), model(*context), logRoute(rml.getSystem(), model),
+      chrome(*context, model, window.getNative(), [this] { running = false; }), linkDrag(*context, model, window.getNative()),
+      fileDrop(*context, window.getNative()), router(*context, model), tooltip(*context), messageBoxes(*context, model) {
 #ifndef NDEBUG
     devTools.emplace(*context, router);
 #endif

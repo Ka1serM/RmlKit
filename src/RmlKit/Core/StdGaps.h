@@ -1,6 +1,7 @@
 #pragma once
 
-//! Emscripten's libc++ lacks std::move_only_function, and GCC 12's libstdc++ lacks std::ranges::contains; each kit has a copy, and the guard macros keep a second copy out.
+//! Emscripten's libc++ lacks std::move_only_function, and GCC 12's libstdc++ lacks std::ranges::contains; each kit has a copy, and the guard macros keep a
+//! second copy out.
 
 #include <algorithm>
 #include <functional>

@@ -1,8 +1,6 @@
 #pragma once
 
 #include <functional>
-
-#include "RmlKit/Core/StdGaps.h"
 #include <mutex>
 #include <stop_token>
 #include <vector>
@@ -10,6 +8,8 @@
 #include <SDL3/SDL_events.h>
 #include <tbb/task_arena.h>
 #include <tbb/task_group.h>
+
+#include "RmlKit/Core/StdGaps.h"
 
 namespace RmlKit::UI {
 

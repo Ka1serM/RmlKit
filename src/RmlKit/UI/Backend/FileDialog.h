@@ -2,11 +2,11 @@
 
 #include <filesystem>
 #include <functional>
-
-#include "RmlKit/Core/StdGaps.h"
 #include <span>
 
 #include <SDL3/SDL_video.h>
+
+#include "RmlKit/Core/StdGaps.h"
 
 namespace RmlKit::UI {
 
