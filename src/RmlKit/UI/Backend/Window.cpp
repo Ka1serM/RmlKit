@@ -1,36 +1,32 @@
 #include "RmlKit/UI/Backend/Window.h"
 
 #include <format>
-
-#include <RmlUi/Core/Log.h>
+#include <utility>
 
 #include "RmlKit/UI/Backend/Fatal.h"
 
 namespace RmlKit::UI {
 
-Window::GlContext::GlContext(SDL_Window* window) : context(SDL_GL_CreateContext(window)) {
-    if (!context)
-        fatal(std::format("SDL_GL_CreateContext failed: {}", SDL_GetError()));
-    if (!SDL_GL_MakeCurrent(window, context)) {
-        SDL_GL_DestroyContext(context);
-        fatal(std::format("SDL_GL_MakeCurrent failed: {}", SDL_GetError()));
-    }
-    setSwapInterval();
-    Rml::String message;
-    if (!RmlGL3::Initialize(&message)) {
-        SDL_GL_DestroyContext(context);
-        fatal(std::format("OpenGL could not be loaded: {}", message));
-    }
-    Rml::Log::Message(Rml::Log::LT_INFO, "%s", message.c_str());
+Window::Window(const char* title, const int width, const int height)
+    : window(create(title, width, height)), device(openDevice()), swapchain(openSwapchain()), renderer(device, swapchain.getFormat()) {}
+
+Window::~Window() {
+    if (auto idle = device.waitIdle(); !idle)
+        fatal(std::format("The GPU did not finish its work: {}", idle.error().message));
 }
 
-Window::GlContext::~GlContext() {
-    RmlGL3::Shutdown();
-    SDL_GL_DestroyContext(context);
+NoorRHI::Device Window::openDevice() {
+    NoorRHI::Device opened;
+    if (auto result = opened.open({.applicationName = PRODUCT_NAME, .presentation = this}); !result)
+        fatal(std::format("The GPU device cannot open: {}", result.error().message));
+    return opened;
 }
 
-Window::Window(const char* title, const int width, const int height) : window(create(title, width, height)), gl(window.get()), viewportSize(pixelSize()) {
-    renderer.SetViewport(viewportSize.x, viewportSize.y);
+NoorRHI::Swapchain Window::openSwapchain() {
+    NoorRHI::Swapchain opened;
+    if (auto result = opened.open(device, *this, {.presentMode = NoorRHI::PresentMode::Vsync, .maxFramesInFlight = 2}); !result)
+        fatal(std::format("The swapchain cannot open: {}", result.error().message));
+    return opened;
 }
 
 bool Window::drawable() const {
@@ -49,21 +45,32 @@ Rml::Vector2i Window::pixelSize() const {
 }
 
 void Window::prepare(Rml::Context& context) {
-    const Rml::Vector2i size = pixelSize();
-    if (size != viewportSize) {
-        renderer.SetViewport(size.x, size.y);
-        viewportSize = size;
+    context.SetDimensions(pixelSize());
+}
+
+NoorRHI::Frame Window::acquire() {
+    constexpr int attempts = 4;
+    for (int attempt = 0; attempt < attempts; ++attempt) {
+        if (auto ready = swapchain.wait(); !ready)
+            fatal(std::format("The swapchain cannot wait for a frame: {}", ready.error().message));
+        auto frame = swapchain.acquire();
+        if (!frame)
+            fatal(std::format("The swapchain cannot give a frame: {}", frame.error().message));
+        if (*frame)
+            return std::move(*frame);
     }
-    context.SetDimensions(size);
+    fatal("The swapchain gives no frame after a rebuild.");
 }
 
 void Window::render(Rml::Context& context) {
-    renderer.Clear();
-    renderer.BeginFrame();
+    NoorRHI::Frame frame = acquire();
+    const NoorRHI::Image& image = frame.getImage();
+    renderer.beginFrame({static_cast<int>(image.getWidth()), static_cast<int>(image.getHeight())});
     context.Render();
-    renderer.EndFrame();
-    if (!SDL_GL_SwapWindow(window.get()))
-        fatal(std::format("SDL_GL_SwapWindow failed: {}", SDL_GetError()));
+    if (auto submitted = device.submit(renderer.endFrame(image)); !submitted)
+        fatal(std::format("The GPU cannot run the frame: {}", submitted.error().message));
+    if (auto presented = swapchain.present(std::move(frame)); !presented)
+        fatal(std::format("The swapchain cannot present the frame: {}", presented.error().message));
 }
 
 }

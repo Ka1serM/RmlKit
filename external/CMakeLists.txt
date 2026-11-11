@@ -10,7 +10,7 @@ function(add_external_subdirectory source)
     set_directory_properties(PROPERTIES COMPILE_OPTIONS "${options}")
 endfunction()
 
-set(submodules freetype harfbuzz lunasvg oneTBB RmlUi SDL)
+set(submodules freetype harfbuzz lunasvg NoorRHI oneTBB RmlUi SDL)
 if(RMLKIT_VIDEO)
     list(APPEND submodules FFmpeg)
 endif()
@@ -20,27 +20,26 @@ foreach(submodule ${submodules})
     endif()
 endforeach()
 
-# SDL gives the window, the input, the audio output, the folder dialogs, and the OpenGL context. RmlUi draws through
-# its OpenGL 3 renderer, so SDL's renderer, GPU API, and other video backends are off. Linux uses only the current
-# backends: Wayland, not X11, and PulseAudio, which PipeWire systems also serve (pipewire-pulse).
-foreach(sdl_option SHARED TESTS TEST_LIBRARY EXAMPLES INSTALL CAMERA GPU RENDER VULKAN HAPTIC JOYSTICK HIDAPI SENSOR POWER
-        TRAY X11 WAYLAND_LIBDECOR DUMMYVIDEO DUMMYAUDIO DISKAUDIO DUMMYCAMERA OFFSCREEN KMSDRM VIRTUAL_JOYSTICK PIPEWIRE
+# SDL gives the window, the input, the audio output, the folder dialogs, and the Vulkan surface. RmlKit draws through
+# NoorRHI, so SDL's renderer, GPU API, OpenGL, and other video backends are off. Linux uses only the current backends:
+# Wayland, not X11, and PulseAudio, which PipeWire systems also serve (pipewire-pulse).
+foreach(sdl_option SHARED TESTS TEST_LIBRARY EXAMPLES INSTALL CAMERA GPU RENDER OPENGL OPENGLES HAPTIC JOYSTICK HIDAPI SENSOR
+        POWER TRAY X11 WAYLAND_LIBDECOR DUMMYVIDEO DUMMYAUDIO DISKAUDIO DUMMYCAMERA OFFSCREEN KMSDRM VIRTUAL_JOYSTICK PIPEWIRE
         ALSA OSS JACK SNDIO IBUS FRIBIDI LIBTHAI RPI ROCKCHIP VIVANTE OPENVR)
     set(SDL_${sdl_option} OFF CACHE BOOL "" FORCE)
 endforeach()
-foreach(sdl_option STATIC VIDEO OPENGL AUDIO DIALOG)
+foreach(sdl_option STATIC VIDEO VULKAN AUDIO DIALOG)
     set(SDL_${sdl_option} ON CACHE BOOL "" FORCE)
 endforeach()
-if(PLATFORM_WEB)
-    set(SDL_OPENGLES ON CACHE BOOL "" FORCE)
-    set(SDL_OPENGL OFF CACHE BOOL "" FORCE)
-endif()
 # Without the PulseAudio headers, SDL silently builds no audio driver, and SDL_Init fails at startup.
 if(PLATFORM_LINUX)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(libpulse REQUIRED libpulse)
 endif()
 add_external_subdirectory(SDL)
+
+# NoorRHI draws the UI: Vulkan on the desktop and WebGPU on the web.
+add_subdirectory(NoorRHI EXCLUDE_FROM_ALL)
 
 # FreeType, the TrueType core only. The function scope keeps an earlier find_package result, such as ZLIB_FOUND, from
 # enabling a disabled codec.
@@ -79,14 +78,13 @@ foreach(rmlui_option SAMPLES LOTTIE_PLUGIN LUA_BINDINGS)
     set(RMLUI_${rmlui_option} OFF CACHE BOOL "" FORCE)
 endforeach()
 add_external_subdirectory(RmlUi)
-# RmlUi's SDL platform and OpenGL 3 renderer, and the HarfBuzz font engine of its sample (RmlUi Core has none). The font
-# engine uses private RmlUi Core headers. The renderer draws its layers with four MSAA samples.
+# RmlUi's SDL platform and the HarfBuzz font engine of its sample (RmlUi Core has none). The font engine uses private
+# RmlUi Core headers.
 file(GLOB rmlui_harfbuzz_sources RmlUi/Samples/basic/harfbuzz/src/*.cpp)
 list(FILTER rmlui_harfbuzz_sources EXCLUDE REGEX "/main\\.cpp$")
-add_library(rmlui_backend STATIC ${rmlui_harfbuzz_sources} RmlUi/Backends/RmlUi_Platform_SDL.cpp
-    RmlUi/Backends/RmlUi_Renderer_GL3.cpp)
+add_library(rmlui_backend STATIC ${rmlui_harfbuzz_sources} RmlUi/Backends/RmlUi_Platform_SDL.cpp)
 target_include_directories(rmlui_backend SYSTEM PUBLIC RmlUi/Backends RmlUi/Samples/basic/harfbuzz/src PRIVATE RmlUi/Source/Core)
-target_compile_definitions(rmlui_backend PUBLIC RMLUI_SDL_VERSION_MAJOR=3 RMLUI_NUM_MSAA_SAMPLES=4)
+target_compile_definitions(rmlui_backend PUBLIC RMLUI_SDL_VERSION_MAJOR=3)
 target_link_libraries(rmlui_backend PUBLIC RmlUi::Core RmlUi::Debugger harfbuzz SDL3::SDL3-static)
 target_compile_options(rmlui_backend PRIVATE ${no_warnings})
 

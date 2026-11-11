@@ -14,7 +14,7 @@ RmlRuntime::RmlRuntime(Window& window)
     : system(window.getNative()), textureLoading(window.getRenderer())
 #if RMLKIT_VIDEO
       ,
-      video(videoConverter, videos)
+      videoConverter(window.getRenderer()), video(videoConverter, videos)
 #endif
 {
     Rml::SetSystemInterface(&system);

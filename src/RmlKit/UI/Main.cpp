@@ -1,7 +1,13 @@
 #include <cstdio>
 #include <memory>
 
+#if PLATFORM_WEB
+#define SDL_MAIN_HANDLED
+#include <emscripten/emscripten.h>
+#else
 #define SDL_MAIN_USE_CALLBACKS
+#endif
+#include <SDL3/SDL_events.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_messagebox.h>
 
@@ -17,7 +23,31 @@ SDL_AppResult fail(const RmlKit::Core::Error& error) {
 
 }
 
-//! SDL's callbacks run the app the same way on the desktop and in the browser, where the page owns the main loop.
+#if PLATFORM_WEB
+
+EM_ASYNC_JS(void, waitForAnimationFrame, (), { await new Promise(requestAnimationFrame); });
+
+//! WebGPU waits suspend the stack through JSPI, which SDL's main callbacks on the web do not allow, so the app owns its loop.
+int main() {
+    auto app = std::make_unique<RMLKIT_APPLICATION_CLASS>();
+    if (auto started = app->startup(); !started)
+        return fail(started.error());
+    bool running = true;
+    while (running) {
+        waitForAnimationFrame();
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+            app->handle(event);
+        running = app->iterate();
+    }
+    app->stopJobs();
+    if (auto stopped = app->shutdown(); !stopped)
+        return fail(stopped.error());
+    return 0;
+}
+
+#else
+
 SDL_AppResult SDL_AppInit(void** state, int, char**) {
     auto app = std::make_unique<RMLKIT_APPLICATION_CLASS>();
     if (auto started = app->startup(); !started)
@@ -43,3 +73,5 @@ void SDL_AppQuit(void* state, SDL_AppResult) {
     if (auto stopped = app->shutdown(); !stopped)
         fail(stopped.error());
 }
+
+#endif

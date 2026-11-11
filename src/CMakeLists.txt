@@ -13,10 +13,16 @@ if(NOT RMLKIT_VIDEO)
     list(FILTER rmlkit_sources EXCLUDE REGEX "/Video[A-Za-z]*\\.cpp$")
 endif()
 
+set(rmlkit_shaders RmlKit/UI/Backend/RenderShaders.slang)
+if(RMLKIT_VIDEO)
+    list(APPEND rmlkit_shaders RmlKit/UI/Backend/VideoShaders.slang)
+endif()
+noorrhi_add_shaders(RmlKitShaders ${rmlkit_shaders})
+
 add_library(RmlKit STATIC ${rmlkit_sources})
 add_library(RmlKit::RmlKit ALIAS RmlKit)
 target_include_directories(RmlKit PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(RmlKit PUBLIC rmlui_backend plutovg::plutovg TBB::tbb)
+target_link_libraries(RmlKit PUBLIC rmlui_backend plutovg::plutovg TBB::tbb RmlKitShaders)
 target_compile_options(RmlKit PRIVATE -fno-exceptions)
 target_compile_definitions(RmlKit
     PUBLIC PLATFORM_WINDOWS=$<BOOL:${PLATFORM_WINDOWS}> PLATFORM_LINUX=$<BOOL:${PLATFORM_LINUX}> PLATFORM_WEB=$<BOOL:${PLATFORM_WEB}>
@@ -30,7 +36,7 @@ if(RMLKIT_VIDEO)
 endif()
 
 if(PLATFORM_WINDOWS)
-    #! The OpenGL loader includes <windows.h>, whose min and max macros break std::min.
+    #! The min and max macros of <windows.h> break std::min.
     target_compile_definitions(RmlKit PUBLIC NOMINMAX)
     target_link_libraries(RmlKit PUBLIC dwmapi ole32 shell32)
 elseif(PLATFORM_LINUX)

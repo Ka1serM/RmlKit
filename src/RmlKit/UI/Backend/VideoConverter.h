@@ -1,33 +1,33 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
+#include <vector>
+
+#include <NoorRHI/NoorRHI.h>
 
 #include "RmlKit/Media/VideoPlayer.h"
-#include "RmlKit/UI/Backend/GlPass.h"
+#include "RmlKit/UI/Backend/Renderer.h"
 
 namespace RmlKit::UI {
 
 class VideoConverter {
 public:
-    VideoConverter();
-    ~VideoConverter();
+    explicit VideoConverter(Renderer& renderer);
     VideoConverter(const VideoConverter&) = delete;
     VideoConverter& operator=(const VideoConverter&) = delete;
 
-    struct Planes {
-        std::array<GLuint, 3> textures = {};
-        std::array<int, 3> widths = {};
-        std::array<int, 3> heights = {};
-    };
-    void convert(const Media::VideoImage& frame, Planes& planes, GLuint target);
-    static void deletePlanes(Planes& planes);
+    using Planes = std::array<NoorRHI::Image, 3>;
+    Renderer& getRenderer() const { return renderer; }
+    void convert(const Media::VideoImage& frame, Planes& planes, const NoorRHI::Image& target);
 
 private:
-    GlPass pass;
-    GLuint program = 0;
-    GLint size = -1;
-    GLint yuvMatrix = -1;
-    GLint yuvOffset = -1;
+    void upload(const Media::VideoImage& frame, std::size_t plane, NoorRHI::Image& image);
+
+    Renderer& renderer;
+    NoorRHI::GraphicsPipeline pipeline;
+    NoorRHI::Sampler sampler;
+    std::vector<std::byte> packed;
 };
 
 }

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.29)
 project(RmlKit LANGUAGES C CXX)
 
 include(cmake/CompilerOptions.cmake)
+include(external/NoorRHI/cmake/NoorRHIShaders.cmake)
 
 option(RMLKIT_VIDEO "Build the video player and the video element, with FFmpeg" OFF)
 set(RMLKIT_APP_ID "" CACHE STRING "The app id. On Wayland, it is the name of the desktop launcher.")

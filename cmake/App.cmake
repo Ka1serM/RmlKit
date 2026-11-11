@@ -2,6 +2,7 @@
 include_guard(GLOBAL)
 
 include("${CMAKE_CURRENT_LIST_DIR}/EmbeddedResources.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../external/NoorRHI/cmake/NoorRHIShaders.cmake")
 cmake_path(SET RMLKIT_DIR NORMALIZE "${CMAKE_CURRENT_LIST_DIR}/..")
 
 if(EMSCRIPTEN)
@@ -123,8 +124,8 @@ function(rmlkit_add_app target)
         add_dependencies(${target} ${APP_DEPENDS})
     endif()
     target_link_options(${target} PRIVATE
-        -sWASMFS -sUSE_WEBGL2=1 -sFULL_ES3=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2
-        -sALLOW_MEMORY_GROWTH=1 -sMAXIMUM_MEMORY=4GB -sSTACK_SIZE=1048576 -sMALLOC=mimalloc
+        -sWASMFS
+        -sMAXIMUM_MEMORY=4GB -sMALLOC=mimalloc
         -sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency -sEXIT_RUNTIME=0
         -sEXPORTED_RUNTIME_METHODS=ccall,callMain
         "--shell-file=${shell}" ${preloads})
