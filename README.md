@@ -95,4 +95,4 @@ is gone, and writes nothing in a Flatpak.
 - The browser: Python 3 and Git, for the Emscripten that `cmake/Emsdk.cmake` installs
 - `RMLKIT_VIDEO` (off by default; it builds the video player and the `<video>` element): make, and on Windows MSYS2 with make and diffutils
 
-Git submodules in `external/`: emsdk (only for the browser), SDL, RmlUi, FreeType, HarfBuzz, lunasvg, oneTBB, and FFmpeg (only with `RMLKIT_VIDEO`).
+Git submodules in `external/`: emsdk (only for the browser), SDL, RmlUi, FreeType, HarfBuzz, lunasvg, oneTBB, NoorRHI (for the coming NoorRHI renderer; nothing builds it yet), and FFmpeg (only with `RMLKIT_VIDEO`).
