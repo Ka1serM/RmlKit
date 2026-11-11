@@ -2,6 +2,8 @@ cmake_path(SET rmlkit_ui_dir NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../ui")
 file(GLOB_RECURSE rmlkit_sources CONFIGURE_DEPENDS RmlKit/*.cpp)
 #! rmlkit_add_resources adds the resource reader with the index of the app's resources.
 list(FILTER rmlkit_sources EXCLUDE REGEX "/EmbeddedResourcesDesktop\\.cpp$")
+#! rmlkit_add_app adds the main function to the app.
+list(FILTER rmlkit_sources EXCLUDE REGEX "/UI/Main\\.cpp$")
 if(PLATFORM_WEB)
     list(FILTER rmlkit_sources EXCLUDE REGEX "Desktop\\.cpp$")
 else()

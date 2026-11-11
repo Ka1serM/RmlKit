@@ -1,6 +1,9 @@
 #include "RmlKit/UI/Backend/Router.h"
 
+#include <algorithm>
+#include <array>
 #include <format>
+#include <string_view>
 
 #include <RmlUi/Core/Context.h>
 #include <RmlUi/Core/ElementDocument.h>
@@ -21,7 +24,11 @@ namespace {
 
 constexpr std::string_view crumbSeparator = " / ";
 
+constexpr std::array<std::string_view, 1> kitViews{"logs"};
+
 Rml::String viewPath(const Rml::String& name) {
+    if (std::ranges::contains(kitViews, name))
+        return std::format("UI/RmlKit/Views/{}.rml", name);
     return std::format("UI/Views/{}.rml", name);
 }
 

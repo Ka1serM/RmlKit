@@ -1,0 +1,106 @@
+    <div class="view" id="logs" nav="logs" crumb="Logs">
+        <div class="page">
+            <div class="page-header">
+                <div class="page-header-title">
+                    <p class="page-title">Logs</p>
+                    <p class="page-subtitle">Messages of this session</p>
+                </div>
+                <div class="page-divider"></div>
+                <div class="meta-item">
+                    <p class="meta-label"><svg class="icon-12" src="/UI/RmlKit/Icons/icon-file-text.svg"/><span>This session</span></p>
+                    <p class="meta-value">{{ logLines.size }} lines</p>
+                </div>
+                <div class="meta-item">
+                    <p class="meta-label"><svg class="icon-12" src="/UI/RmlKit/Icons/icon-triangle-alert.svg"/><span>Warnings</span></p>
+                    <p class="meta-value">{{ logs.warningCount }}</p>
+                </div>
+                <div class="meta-item">
+                    <p class="meta-label"><svg class="icon-12" src="/UI/RmlKit/Icons/icon-circle-x.svg"/><span>Errors</span></p>
+                    <p class="meta-value">{{ logs.errorCount }}</p>
+                </div>
+                <div class="page-header-actions">
+                    <button class="button ghost"><svg class="icon-16" src="/UI/RmlKit/Icons/icon-folder-open.svg"/><span>Open log folder</span></button>
+                    <button class="button"><svg class="icon-16" src="/UI/RmlKit/Icons/icon-upload.svg"/><span>Export logs</span></button>
+                </div>
+            </div>
+
+            <div class="logs-columns">
+                <section class="panel logs-main">
+                    <div class="logs-filters">
+                        <div class="input search">
+                            <svg class="icon-14 icon-muted" src="/UI/RmlKit/Icons/icon-search.svg"/>
+                            <input class="input-field" type="text" placeholder="Filter messages…" data-value="logs.search" data-event-change="logsSearch()"/>
+                            <span class="kbd">Ctrl F</span>
+                        </div>
+                        <div class="segment small levels">
+                            <button class="segment-item" data-class-on="logs.levelFilter == ''" data-event-click="logsLevel('')"><span>All</span> <span class="segment-count">{{ logLines.size }}</span></button>
+                            <button class="segment-item" data-class-on="logs.levelFilter == 'INFO'" data-event-click="logsLevel('INFO')"><span>Info</span></button>
+                            <button class="segment-item" data-class-on="logs.levelFilter == 'DONE'" data-event-click="logsLevel('DONE')"><span>Done</span></button>
+                            <button class="segment-item" data-class-on="logs.levelFilter == 'WARN'" data-event-click="logsLevel('WARN')"><span>Warn</span> <span class="segment-count">{{ logs.warningCount }}</span></button>
+                            <button class="segment-item" data-class-on="logs.levelFilter == 'ERR'" data-event-click="logsLevel('ERR')"><span>Error</span> <span class="segment-count">{{ logs.errorCount }}</span></button>
+                        </div>
+                        <select class="input select logs-source" data-value="logs.sourceFilter" data-event-change="logsSource()">
+                            <option value="">Source · All</option>
+                            <option data-for="source : logs.sources" data-attr-value="source">Source · {{ source }}</option>
+                        </select>
+                        <label class="toggle push-end">
+                            <input type="checkbox" data-checked="logs.follow"/>
+                            <span class="toggle-knob"></span>
+                            <span class="small">Follow</span>
+                        </label>
+                    </div>
+                    <virtual-grid class="logs-body" data-attr-follow="logs.follow" data-event-viewport="logsViewport()">
+                        <div class="empty-state" data-if="logLines.size == 0">
+                            <p class="empty-title">No log lines</p>
+                            <p class="empty-message">New lines appear here while {{ productName }} runs.</p>
+                        </div>
+                        <div class="empty-state" data-if="logs.shownCount == 0 ? logLines.size > 0 : false">
+                            <p class="empty-title">No matching lines</p>
+                            <p class="empty-message">No line matches the level, source and text filters.</p>
+                        </div>
+                        <div data-style-height="logRows.above + 'dp'"></div>
+                        <!--! RmlUi updates a data-for before deeper views, so the bindings that read a row are on a child of the data-for element. -->
+                        <div data-for="line : logRows.rows">
+                            <div class="log-line" data-class-warn="line.level == 'WARN'" data-class-err="line.level == 'ERR'" data-class-done="line.level == 'DONE'" data-class-selected="line.index == logs.pickedRow" data-event-click="logsPick(line.index)">
+                                <span class="log-time">{{ line.time }}</span>
+                                <span class="log-level">{{ line.level }}</span>
+                                <span class="log-text"><span class="log-source">{{ line.source }}</span> · {{ line.message }}</span>
+                                <button class="icon-button log-copy" tooltip="Copy line" data-event-click="logsCopy(line.index)">
+                                    <svg class="icon-12" data-if="line.index != logs.copiedRow" src="/UI/RmlKit/Icons/icon-copy.svg"/>
+                                    <svg class="icon-12" data-if="line.index == logs.copiedRow" src="/UI/RmlKit/Icons/icon-check.svg"/>
+                                </button>
+                            </div>
+                        </div>
+                        <div data-style-height="logRows.below + 'dp'"></div>
+                    </virtual-grid>
+                    <div class="logs-footer">
+                        <div class="status-dot online" data-if="logs.follow"></div>
+                        <span class="text-secondary" data-if="logs.follow">Following · new lines scroll into view</span>
+                        <span class="text-secondary" data-if="!logs.follow">Paused · new lines do not scroll the list</span>
+                        <span class="mono small text-muted push-end">{{ logs.shownCount }} of {{ logLines.size }} lines</span>
+                    </div>
+                </section>
+
+                <section class="panel logs-details">
+                    <div class="panel-header">
+                        <span class="panel-title">Details</span>
+                        <span class="mono small text-muted">{{ logs.picked.time }}</span>
+                    </div>
+                    <div class="details-body details-stack" data-if="logs.pickedRow >= 0">
+                        <div class="row">
+                            <span class="badge" data-class-success="logs.picked.level == 'DONE'" data-class-warning="logs.picked.level == 'WARN'" data-class-danger="logs.picked.level == 'ERR'"><span>{{ logs.picked.level }}</span></span>
+                            <span class="mono small text-muted">{{ logs.picked.source }}</span>
+                        </div>
+                        <p class="log-detail-message">{{ logs.picked.message }}</p>
+                    </div>
+                    <div class="details-body empty-state" data-if="logs.pickedRow < 0">
+                        <p class="empty-title">No line picked</p>
+                        <p class="empty-message">Click a line to see it here.</p>
+                    </div>
+                    <div class="details-footer" data-if="logs.pickedRow >= 0">
+                        <button class="button" data-event-click="logsCopyPicked()"><svg class="icon-16" src="/UI/RmlKit/Icons/icon-copy.svg"/><span>Copy line</span></button>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>

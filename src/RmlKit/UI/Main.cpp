@@ -5,9 +5,8 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_messagebox.h>
 
-#include "Application.h"
+#include RMLKIT_APPLICATION_HEADER
 
-//! SDL's callbacks run the app the same way on the desktop and in the browser, where the page owns the main loop.
 namespace {
 
 SDL_AppResult fail(const RmlKit::Core::Error& error) {
@@ -18,8 +17,9 @@ SDL_AppResult fail(const RmlKit::Core::Error& error) {
 
 }
 
+//! SDL's callbacks run the app the same way on the desktop and in the browser, where the page owns the main loop.
 SDL_AppResult SDL_AppInit(void** state, int, char**) {
-    auto app = std::make_unique<Example::Application>();
+    auto app = std::make_unique<RMLKIT_APPLICATION_CLASS>();
     if (auto started = app->startup(); !started)
         return fail(started.error());
     *state = app.release();
@@ -27,16 +27,16 @@ SDL_AppResult SDL_AppInit(void** state, int, char**) {
 }
 
 SDL_AppResult SDL_AppEvent(void* state, SDL_Event* event) {
-    static_cast<Example::Application*>(state)->handle(*event);
+    static_cast<RMLKIT_APPLICATION_CLASS*>(state)->handle(*event);
     return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppIterate(void* state) {
-    return static_cast<Example::Application*>(state)->iterate() ? SDL_APP_CONTINUE : SDL_APP_SUCCESS;
+    return static_cast<RMLKIT_APPLICATION_CLASS*>(state)->iterate() ? SDL_APP_CONTINUE : SDL_APP_SUCCESS;
 }
 
 void SDL_AppQuit(void* state, SDL_AppResult) {
-    const std::unique_ptr<Example::Application> app(static_cast<Example::Application*>(state));
+    const std::unique_ptr<RMLKIT_APPLICATION_CLASS> app(static_cast<RMLKIT_APPLICATION_CLASS*>(state));
     if (!app)
         return;
     app->stopJobs();

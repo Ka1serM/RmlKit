@@ -1,4 +1,4 @@
-#include "RmlKit/UI/Backend/DesktopEntry.h"
+#include "RmlKit/UI/Backend/Application.h"
 
 #if PLATFORM_LINUX
 
@@ -92,7 +92,7 @@ std::expected<void, Core::Error> write(const std::filesystem::path& file, const 
 
 }
 
-std::expected<void, Core::Error> installDesktopEntry() {
+std::expected<void, Core::Error> Application::installDesktopEntry() {
     if (std::string_view(APP_ID).empty() || std::getenv("FLATPAK_ID") || !EmbeddedResources::exists(std::string(launcherResource)))
         return {};
     const bool svg = EmbeddedResources::exists("RmlKit/Desktop/icon.svg");
@@ -134,7 +134,7 @@ std::expected<void, Core::Error> installDesktopEntry() {
 
 namespace RmlKit::UI {
 
-std::expected<void, Core::Error> installDesktopEntry() {
+std::expected<void, Core::Error> Application::installDesktopEntry() {
     return {};
 }
 

@@ -1,0 +1,123 @@
+.backdrop {
+    position: absolute;
+    overflow: hidden;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+
+
+.scrim-left {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1600dp;
+}
+
+.wizard-scroll {
+    position: relative;
+    width: 860dp;
+    max-width: 100%;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.wizard-scroll scrollbarvertical {
+    width: 0;
+}
+
+.wizard {
+    display: flex;
+    flex-direction: column;
+    gap: 24dp;
+    min-height: 100%;
+    padding: 48dp 64dp;
+    box-sizing: border-box;
+}
+
+/*! The top sits at a share of the window height instead of centring, so the step card grows downward when a field appears (step 2) and the welcome text above it stays put. */
+.welcome {
+    margin-top: 12vh;
+    display: flex;
+    flex-direction: column;
+    gap: 12dp;
+    padding-bottom: 8dp;
+}
+
+.logo-mark-large {
+    width: 40dp;
+    height: 40dp;
+}
+
+.steps {
+    display: flex;
+    align-items: center;
+    gap: 16dp;
+}
+
+.step-connector {
+    width: 48dp;
+    height: 1dp;
+}
+
+.step-card {
+    margin-bottom: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24dp;
+    padding: 28dp;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 28dp;
+}
+
+.field.key, .field.importer {
+    gap: 10dp;
+}
+
+.field-actions {
+    display: flex;
+    align-items: center;
+    gap: 8dp;
+}
+
+.step-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8dp;
+    padding-top: 8dp;
+}
+
+.step-back {
+    margin-right: auto;
+}
+
+.backdrop {
+    background-color: #1c1c1c;
+}
+
+.scrim-left {
+    decorator: linear-gradient(90deg, #1c1c1c 0%, #1c1c1cf5 46%, #1c1c1c26 70%, #1c1c1c00 100%);
+}
+
+.step-connector {
+    background-color: #4a4a4a;
+}
+
+.step-card {
+    background-color: #222222;
+    border: 1dp #2f2f2f;
+    border-radius: 4dp;
+}
+
+.step-actions-note {
+    font-size: 12dp;
+    color: #707070;
+}

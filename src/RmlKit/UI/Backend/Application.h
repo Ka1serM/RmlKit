@@ -21,6 +21,7 @@
 #include "RmlKit/UI/Backend/Tooltip.h"
 #include "RmlKit/UI/Backend/Window.h"
 #include "RmlKit/UI/Backend/WindowChrome.h"
+#include "RmlKit/UI/Controllers/LogsController.h"
 #include "RmlKit/UI/Models/Model.h"
 
 namespace RmlKit::UI {
@@ -66,6 +67,8 @@ private:
         void operator()(Rml::Context* context) const noexcept { Rml::RemoveContext(context->GetName()); }
     };
 
+    //! On Linux, writes the app's launcher and icon to the user's data folder, so the desktop lists the app and shows its icon on Wayland. It keeps a launcher that the user edited, and does nothing in a Flatpak, on Windows, on the web, or when rmlkit_add_app had no ICON.
+    static std::expected<void, Core::Error> installDesktopEntry();
     static std::unique_ptr<Rml::Context, ContextRemover> createContext(Rml::Vector2i size);
     static bool SDLCALL watchEvent(void* application, SDL_Event* event);
     static Uint64 SDLCALL wake(void* application, SDL_TimerID timer, Uint64 interval);
@@ -94,6 +97,7 @@ private:
     Router router;
     Tooltip tooltip;
     MessageBoxService messageBoxes;
+    LogsController logs;
 #ifndef NDEBUG
     std::optional<DevTools> devTools;
 #endif

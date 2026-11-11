@@ -20,9 +20,10 @@ set(RMLKIT_UI_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/App")
 set(RMLKIT_ASSET_SOURCE_DIR "${PROJECT_SOURCE_DIR}")
 add_subdirectory(external/RmlKit)
 
-add_executable(App src/App/Main.cpp src/App/App.cpp)
+add_executable(App src/App/App.cpp)
+target_include_directories(App PRIVATE src/App)
 target_link_libraries(App PRIVATE RmlKit::RmlKit)
-rmlkit_add_app(App UI_DIR "${RMLKIT_UI_SOURCE_DIR}" ASSET_DIR "${RMLKIT_ASSET_SOURCE_DIR}" ICON "${PROJECT_SOURCE_DIR}/assets/icon.svg")
+rmlkit_add_app(App APPLICATION App APPLICATION_HEADER "App.h" UI_DIR "${RMLKIT_UI_SOURCE_DIR}" ASSET_DIR "${RMLKIT_ASSET_SOURCE_DIR}" ICON "${PROJECT_SOURCE_DIR}/assets/icon.svg")
 ```
 
 ```cpp
@@ -50,6 +51,8 @@ cmake --preset web-debug && cmake --build build-web-debug && python3 ../tools/se
 
 | Argument | Meaning |
 | --- | --- |
+| `APPLICATION` | The app's subclass of `RmlKit::UI::Application`, such as `Example::Application`. RmlKit's `main` constructs it. Required. |
+| `APPLICATION_HEADER` | The header that declares `APPLICATION`, as the app includes it. Required. |
 | `UI_DIR` | The folder that holds `UI/`. Its `.rml` and `.rcss` files ship with the app. Required. |
 | `ASSET_DIR` | The folder that holds `assets/`. Every file in it ships with the app. |
 | `RESOURCES` | More files, as `ROOT <folder> <file>...`. Each ships at its path below its `ROOT`. |
@@ -59,9 +62,16 @@ cmake --preset web-debug && cmake --build build-web-debug && python3 ../tools/se
 | `DESKTOP_COMMENT` | The Linux launcher's tooltip. |
 | `DESKTOP_CATEGORIES` | The Linux launcher's menu categories, such as `Graphics;3DGraphics;`. |
 | `WEB_PRE_JS` | A `--pre-js` file. It can set `Module.rmlkitStart(status)`, which must call `Module.callMain()`. |
+| `WEB_LIBRARY_JS` | A `--js-library` file with the app's own JavaScript functions. |
 
 The desktop build embeds the files into the executable. The web build preloads them into `index.data`, and its page
 comes from `web/shell.html`.
+
+### Kit views and styles
+
+The view `logs` comes from RmlKit: `UI/RmlKit/Views/logs.rml`, with the controller that the app's `Application` already
+owns. The main document links `UI/RmlKit/Styles/logs.rcss`, and `onboarding.rcss` and `settings.rcss` when it has those
+pages. The icons in `UI/RmlKit/Icons` have root paths, such as `/UI/RmlKit/Icons/icon-check.svg`.
 
 ### Linux launcher
 

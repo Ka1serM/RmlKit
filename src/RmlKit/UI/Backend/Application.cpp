@@ -11,7 +11,6 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_video.h>
 
-#include "RmlKit/UI/Backend/DesktopEntry.h"
 #include "RmlKit/UI/Backend/Fatal.h"
 
 namespace RmlKit::UI {
@@ -33,7 +32,7 @@ Application::Sdl::~Sdl() {
 Application::Application()
     : window(PRODUCT_NAME, 1600, 1056), rml(window), context(createContext(window.pixelSize())), model(*context), logRoute(rml.getSystem(), model),
       chrome(*context, model, window.getNative(), [this] { running = false; }), linkDrag(*context, model, window.getNative()),
-      fileDrop(*context, window.getNative()), router(*context, model), tooltip(*context), messageBoxes(*context, model) {
+      fileDrop(*context, window.getNative()), router(*context, model), tooltip(*context), messageBoxes(*context, model), logs(model) {
 #ifndef NDEBUG
     devTools.emplace(*context, router);
 #endif

@@ -18,11 +18,14 @@ set(RMLKIT_UI_SOURCE_DIR "${PROJECT_SOURCE_DIR}")
 set(RMLKIT_ASSET_SOURCE_DIR "${PROJECT_SOURCE_DIR}")
 add_subdirectory(.. rmlkit EXCLUDE_FROM_ALL)
 
-add_executable(RmlKitExample Main.cpp Application.cpp)
+add_executable(RmlKitExample Application.cpp)
+target_include_directories(RmlKitExample PRIVATE "${PROJECT_SOURCE_DIR}")
 target_link_libraries(RmlKitExample PRIVATE RmlKit::RmlKit)
 target_compile_options(RmlKitExample PRIVATE -fno-exceptions)
 target_compile_definitions(RmlKitExample PRIVATE PRODUCT_NAME="${PROJECT_NAME}")
 rmlkit_add_app(RmlKitExample
+    APPLICATION Example::Application
+    APPLICATION_HEADER "Application.h"
     UI_DIR "${PROJECT_SOURCE_DIR}"
     ASSET_DIR "${PROJECT_SOURCE_DIR}"
     ICON "${PROJECT_SOURCE_DIR}/assets/icon.svg"
