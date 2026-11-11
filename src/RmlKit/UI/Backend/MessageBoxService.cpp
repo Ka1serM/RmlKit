@@ -90,14 +90,12 @@ void MessageBoxService::close() {
 }
 
 void MessageBoxService::onClose(Rml::DataModelHandle, Rml::Event&, const Rml::VariantList& arguments) {
-    if (!arguments.empty())
-        fatal("closeMessageBox takes no argument");
+    Model::requireNoArguments(arguments, "closeMessageBox");
     close();
 }
 
 void MessageBoxService::onKey(Rml::DataModelHandle, Rml::Event& event, const Rml::VariantList& arguments) {
-    if (!arguments.empty())
-        fatal("messageBoxKey takes no argument");
+    Model::requireNoArguments(arguments, "messageBoxKey");
     const int key = event.GetParameter<int>("key_identifier", Rml::Input::KI_UNKNOWN);
     if (key != Rml::Input::KI_RETURN && key != Rml::Input::KI_NUMPADENTER && key != Rml::Input::KI_ESCAPE)
         return;

@@ -133,8 +133,7 @@ private:
     }
 
     void onViewport(Rml::DataModelHandle, Rml::Event& event, const Rml::VariantList& arguments) {
-        if (!arguments.empty())
-            fatal("a viewport event takes no argument");
+        Model::requireNoArguments(arguments, "a viewport event");
         scrollTop = event.GetParameter("scroll_top", 0.0f);
         viewportHeight = event.GetParameter("height", 0.0f);
         width = event.GetParameter("width", 0.0f);

@@ -87,4 +87,29 @@ void Model::report(const ReportLevel level, const Rml::String& source, Rml::Stri
     dirty("logRows");
 }
 
+void Model::requireNoArguments(const Rml::VariantList& arguments, const char* event) {
+    if (!arguments.empty())
+        fatal(std::format("{} takes no argument", event));
+}
+
+std::size_t Model::indexOf(const Rml::Variant& argument, const char* event) {
+    const int index = argument.Get<int>(-1);
+    if (index < 0)
+        fatal(std::format("{}: the index is not a number from 0", event));
+    return static_cast<std::size_t>(index);
+}
+
+std::size_t Model::indexArgument(const Rml::VariantList& arguments, const char* event) {
+    if (arguments.size() != 1)
+        fatal(std::format("{} takes one argument: the index", event));
+    return indexOf(arguments[0], event);
+}
+
+std::size_t Model::indexArgument(const Rml::VariantList& arguments, const char* event, const std::size_t count) {
+    const std::size_t index = indexArgument(arguments, event);
+    if (index >= count)
+        fatal(std::format("{}: the list has {} rows, not a row {}", event, count, index));
+    return index;
+}
+
 }

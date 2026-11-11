@@ -1,10 +1,12 @@
 #pragma once
 
+#include <cstddef>
 #include <format>
 #include <utility>
 
 #include <RmlUi/Core/DataModelHandle.h>
 #include <RmlUi/Core/Types.h>
+#include <RmlUi/Core/Variant.h>
 
 #include "RmlKit/UI/Backend/Fatal.h"
 #include "RmlKit/UI/Models/LogsModel.h"
@@ -38,6 +40,12 @@ public:
     }
     bool takeChanged() { return std::exchange(changed, false); }
     void report(ReportLevel level, const Rml::String& source, Rml::String message);
+
+    static void requireNoArguments(const Rml::VariantList& arguments, const char* event);
+    static std::size_t indexOf(const Rml::Variant& argument, const char* event);
+    static std::size_t indexArgument(const Rml::VariantList& arguments, const char* event);
+    //! The one argument must be an index below count.
+    static std::size_t indexArgument(const Rml::VariantList& arguments, const char* event, std::size_t count);
 
     NavigationModel navigation;
     LogsModel logs;

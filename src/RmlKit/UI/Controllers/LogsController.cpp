@@ -40,41 +40,37 @@ void LogsController::onLevel(Rml::DataModelHandle, Rml::Event&, const Rml::Varia
 }
 
 void LogsController::onSearch(Rml::DataModelHandle, Rml::Event& event, const Rml::VariantList& arguments) {
-    if (!arguments.empty())
-        fatal("logsSearch takes no argument");
+    Model::requireNoArguments(arguments, "logsSearch");
     model.logs.search = event.GetParameter<Rml::String>("value", "");
     filter();
 }
 
 void LogsController::onSource(Rml::DataModelHandle, Rml::Event& event, const Rml::VariantList& arguments) {
-    if (!arguments.empty())
-        fatal("logsSource takes no argument");
+    Model::requireNoArguments(arguments, "logsSource");
     model.logs.sourceFilter = event.GetParameter<Rml::String>("value", "");
     filter();
 }
 
 void LogsController::onViewport(Rml::DataModelHandle, Rml::Event& event, const Rml::VariantList& arguments) {
-    if (!arguments.empty())
-        fatal("logsViewport takes no argument");
+    Model::requireNoArguments(arguments, "logsViewport");
     const bool changed = model.logs.setViewport(event.GetParameter("scroll_top", 0.0f), event.GetParameter("height", 0.0f), event.GetParameter("at_end", true));
     if (changed)
         model.dirty("logRows");
 }
 
 void LogsController::onPick(Rml::DataModelHandle, Rml::Event&, const Rml::VariantList& arguments) {
-    const int row = rowArgument(arguments, "logsPick");
+    const int row = static_cast<int>(Model::indexArgument(arguments, "logsPick", model.logs.lines.size()));
     model.logs.pickedRow = row;
     model.logs.picked = model.logs.lines[static_cast<std::size_t>(row)];
     model.dirty("logs");
 }
 
 void LogsController::onCopy(Rml::DataModelHandle, Rml::Event&, const Rml::VariantList& arguments) {
-    copy(rowArgument(arguments, "logsCopy"));
+    copy(static_cast<int>(Model::indexArgument(arguments, "logsCopy", model.logs.lines.size())));
 }
 
 void LogsController::onCopyPicked(Rml::DataModelHandle, Rml::Event&, const Rml::VariantList& arguments) {
-    if (!arguments.empty())
-        fatal("logsCopyPicked takes no argument");
+    Model::requireNoArguments(arguments, "logsCopyPicked");
     if (model.logs.pickedRow < 0)
         fatal("logsCopyPicked: no line is picked");
     copy(model.logs.pickedRow);
@@ -91,16 +87,6 @@ void LogsController::copy(const int row) {
     const LogLine& line = model.logs.lines[static_cast<std::size_t>(row)];
     Rml::GetSystemInterface()->SetClipboardText(std::format("{} {} {} · {}", line.time, line.level, line.source, line.message));
     model.dirty("logs");
-}
-
-int LogsController::rowArgument(const Rml::VariantList& arguments, const char* event) const {
-    if (arguments.size() != 1)
-        fatal(std::format("{} takes one argument: the line index", event));
-    const int index = arguments[0].Get<int>(-1);
-    const std::size_t count = model.logs.lines.size();
-    if (index < 0 || static_cast<std::size_t>(index) >= count)
-        fatal(std::format("{}: the log has {} lines, not a line {}", event, count, index));
-    return index;
 }
 
 }

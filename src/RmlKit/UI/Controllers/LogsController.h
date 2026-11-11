@@ -25,7 +25,6 @@ private:
 
     void filter();
     void copy(int row);
-    int rowArgument(const Rml::VariantList& arguments, const char* event) const;
 
     Model& model;
 };
