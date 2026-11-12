@@ -119,10 +119,12 @@ function copyByCommand(text) {
     const area = document.createElement('textarea');
     area.value = text;
     area.setAttribute('readonly', '');
-    Object.assign(area.style, {position: 'fixed', left: '-9999px', top: '0', opacity: '0'});
+    //! iOS Safari zooms into a focused field below 16px, and select() alone selects nothing in a read-only textarea.
+    Object.assign(area.style, {position: 'fixed', left: '-9999px', top: '0', opacity: '0', fontSize: '16px'});
     const focused = document.activeElement;
     document.body.appendChild(area);
     area.select();
+    area.setSelectionRange(0, text.length);
     let copied = false;
     try { copied = document.execCommand('copy'); } catch { copied = false; }
     area.remove();
@@ -145,6 +147,21 @@ Module.rmlkitCopy = text => {
 };
 document.addEventListener('click', finishPendingCopy, true);
 document.addEventListener('keyup', finishPendingCopy, true);
+//! SDL resizes the canvas in the resize event, which clears it. A frame that the app draws later shows the cleared canvas.
+let resizePending = false;
+let resizeApplying = false;
+window.addEventListener('resize', event => {
+    if (resizeApplying) return;
+    event.stopImmediatePropagation();
+    resizePending = true;
+}, true);
+Module.rmlkitApplyResize = () => {
+    if (!resizePending) return;
+    resizePending = false;
+    resizeApplying = true;
+    window.dispatchEvent(new Event('resize'));
+    resizeApplying = false;
+};
 const linkDrag = document.getElementById('link-drag');
 Module.rmlkitShowLinkDrag = (x, y, width, height, link) => {
     const canvas = Module.canvas.getBoundingClientRect();

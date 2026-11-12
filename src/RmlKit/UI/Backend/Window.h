@@ -42,6 +42,7 @@ private:
     NoorRHI::Device openDevice();
     NoorRHI::Swapchain openSwapchain();
     NoorRHI::Frame acquire();
+    void waitForNextFrame();
 
     struct WindowDeleter {
         void operator()(SDL_Window* window) const noexcept { SDL_DestroyWindow(window); }

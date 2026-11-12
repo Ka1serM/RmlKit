@@ -26,6 +26,7 @@ SDL_AppResult fail(const RmlKit::Core::Error& error) {
 #if PLATFORM_WEB
 
 EM_ASYNC_JS(void, waitForAnimationFrame, (), { await new Promise(requestAnimationFrame); });
+EM_JS(void, applyPendingResize, (), { Module.rmlkitApplyResize(); });
 
 //! WebGPU waits suspend the stack through JSPI, which SDL's main callbacks on the web do not allow, so the app owns its loop.
 int main() {
@@ -35,6 +36,7 @@ int main() {
     bool running = true;
     while (running) {
         waitForAnimationFrame();
+        applyPendingResize();
         SDL_Event event;
         while (SDL_PollEvent(&event))
             app->handle(event);

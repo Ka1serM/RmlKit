@@ -70,7 +70,9 @@ private:
     //! On Linux, writes the app's launcher and icon to the user's data folder, so the desktop lists the app and shows its icon on Wayland. It keeps a launcher that the user edited, and does nothing in a Flatpak, on Windows, on the web, or when rmlkit_add_app had no ICON.
     static std::expected<void, Core::Error> installDesktopEntry();
     static std::unique_ptr<Rml::Context, ContextRemover> createContext(Rml::Vector2i size);
+#if PLATFORM_WINDOWS
     static bool SDLCALL watchEvent(void* application, SDL_Event* event);
+#endif
     static Uint64 SDLCALL wake(void* application, SDL_TimerID timer, Uint64 interval);
 
     double nextFrameDelay() const;

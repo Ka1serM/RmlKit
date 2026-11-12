@@ -18,13 +18,18 @@ void Application::Sdl::setPlatformHints() {
     SDL_SetHint(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, "0");
 }
 
+//! On Wayland, SDL acks a configure only after its size event, so a draw in a watch commits the new size before the ack.
 void Application::watchResize() {
+#if PLATFORM_WINDOWS
     if (!SDL_AddEventWatch(watchEvent, this))
         fatal(std::format("SDL_AddEventWatch failed: {}", SDL_GetError()));
+#endif
 }
 
 void Application::unwatchResize() {
+#if PLATFORM_WINDOWS
     SDL_RemoveEventWatch(watchEvent, this);
+#endif
 }
 
 void Application::scheduleNextFrame() {
@@ -49,6 +54,7 @@ Uint64 SDLCALL Application::wake(void* application, SDL_TimerID, Uint64) {
     return 0;
 }
 
+#if PLATFORM_WINDOWS
 bool SDLCALL Application::watchEvent(void* application, SDL_Event* event) {
     //! Windows runs a modal loop while the user drags the border, and SDL still sends live-resize exposes to watchers from inside it.
     const bool sizeChanged = event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED;
@@ -57,5 +63,6 @@ bool SDLCALL Application::watchEvent(void* application, SDL_Event* event) {
         static_cast<Application*>(application)->draw();
     return true;
 }
+#endif
 
 }
