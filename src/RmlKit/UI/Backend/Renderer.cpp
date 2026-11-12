@@ -97,7 +97,7 @@ void Renderer::openPipelines(const NoorRHI::ImageFormat targetFormat) {
             desc.depthFormat = stencilFormat;
             desc.samples = layerSamples;
         }
-        if (auto opened = pipelines[static_cast<std::size_t>(program)].open(device, desc); !opened)
+        if (auto opened = pipelines[static_cast<std::size_t>(program)].openAsync(device, desc); !opened)
             fatal(std::format("The renderer cannot open a pipeline: {}", opened.error().message));
     };
     const NoorRHI::Shader& geometry = RenderShaders::geometryMain;
@@ -124,6 +124,9 @@ void Renderer::openPipelines(const NoorRHI::ImageFormat targetFormat) {
     open(Program::Blur, pass, RenderShaders::blurMain, Target::Postprocess, BlendMode::Opaque, none);
     open(Program::DropShadow, pass, RenderShaders::dropShadowMain, Target::Postprocess, BlendMode::Opaque, none);
     open(Program::Present, pass, RenderShaders::copyMain, Target::Present, BlendMode::PremultipliedAlpha, none);
+    for (const NoorRHI::GraphicsPipeline& pipeline : pipelines)
+        if (auto compiled = pipeline.wait(); !compiled)
+            fatal(std::format("The renderer cannot compile a pipeline: {}", compiled.error().message));
 }
 
 NoorRHI::Image Renderer::openImage(const Rml::Vector2i size, const NoorRHI::ImageFormat format, const NoorRHI::ImageUsage usage,
@@ -152,8 +155,8 @@ NoorRHI::CommandList& Renderer::record() {
     return commands;
 }
 
-Rml::TextureHandle Renderer::addTexture(NoorRHI::Image image) {
-    return textures.add(std::move(image));
+Rml::TextureHandle Renderer::addTexture(NoorRHI::Image image, const TextureMode mode) {
+    return textures.add({std::move(image), mode});
 }
 
 void Renderer::beginFrame(const Rml::Vector2i size) {
@@ -311,7 +314,9 @@ void Renderer::RenderGeometry(const Rml::CompiledGeometryHandle geometry, const 
     RenderShaders::GeometryArguments arguments = describeGeometry(translation);
     if (!texture)
         return drawGeometry(clipped(Program::Color), geometry, arguments);
-    arguments.texture = textures.get(texture).getSampledHandle();
+    const Texture& sampled = textures.get(texture);
+    arguments.texture = sampled.image.getSampledHandle();
+    arguments.textureMode = static_cast<std::uint32_t>(sampled.mode);
     drawGeometry(clipped(Program::Texture), geometry, arguments);
 }
 
@@ -410,7 +415,7 @@ Rml::TextureHandle Renderer::GenerateTexture(const Rml::Span<const Rml::byte> so
     NoorRHI::Image image = openImage(sourceDimensions, colorFormat, NoorRHI::ImageUsage::Sampled, 1);
     if (auto uploaded = image.upload(std::as_bytes(std::span(source.data(), source.size()))); !uploaded)
         fatal(std::format("The renderer cannot upload a texture: {}", uploaded.error().message));
-    return textures.add(std::move(image));
+    return addTexture(std::move(image), TextureMode::Premultiplied);
 }
 
 void Renderer::ReleaseTexture(const Rml::TextureHandle texture) {
@@ -493,7 +498,7 @@ Rml::TextureHandle Renderer::SaveLayerAsTexture() {
     NoorRHI::Image image = openImage(bounds.Size(), colorFormat, NoorRHI::ImageUsage::Sampled, 1);
     resolve(layerCount - 1);
     commands.copy(postprocess[0], image, toRect(bounds));
-    return textures.add(std::move(image));
+    return addTexture(std::move(image), TextureMode::Premultiplied);
 }
 
 Rml::CompiledFilterHandle Renderer::SaveLayerAsMaskImage() {

@@ -40,7 +40,12 @@ float4 colorMain(GeometryVaryings input) : SV_Target0 {
 [shader("fragment")]
 float4 textureMain(GeometryVaryings input) : SV_Target0 {
     const RenderShaders::GeometryArguments arguments = rootArguments<RenderShaders::GeometryArguments>();
-    return input.color * arguments.texture.SampleLevel(arguments.sampler, input.texCoord, 0.0);
+    const float4 texel = arguments.texture.Sample(arguments.sampler, input.texCoord);
+    if (arguments.textureMode == RenderShaders::straightTexture)
+        return input.color * float4(texel.rgb * texel.a, texel.a);
+    if (arguments.textureMode >= RenderShaders::maskTexture)
+        return input.color * texel[arguments.textureMode - RenderShaders::maskTexture];
+    return input.color * texel;
 }
 
 [shader("fragment")]

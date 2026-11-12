@@ -1,6 +1,6 @@
 #! The web build includes this before project(): it installs the pinned Emscripten into external/emsdk and takes its toolchain file.
 set(emsdk_version 6.0.13)
-cmake_path(SET rmlkit_dir NORMALIZE "${CMAKE_CURRENT_LIST_DIR}/..")
+cmake_path(GET CMAKE_CURRENT_LIST_DIR PARENT_PATH rmlkit_dir)
 set(EMSDK_ROOT "${rmlkit_dir}/external/emsdk")
 if(NOT EXISTS "${EMSDK_ROOT}/emsdk.py")
     find_package(Git REQUIRED)

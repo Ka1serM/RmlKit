@@ -13,6 +13,9 @@ static const uint repeatingLinearGradient = 3;
 static const uint repeatingRadialGradient = 4;
 static const uint repeatingConicGradient = 5;
 static const uint blurTaps = 7;
+static const uint premultipliedTexture = 0;
+static const uint straightTexture = 1;
+static const uint maskTexture = 2;
 
 struct Vertex {
     float x;
@@ -34,6 +37,7 @@ struct GeometryArguments {
     float2 gradientVector;
     uint gradientFunction;
     uint stopCount;
+    uint textureMode;
 };
 
 struct PassArguments {

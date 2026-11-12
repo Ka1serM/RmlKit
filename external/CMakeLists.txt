@@ -60,8 +60,9 @@ file(STRINGS harfbuzz/src/harfbuzz.cc harfbuzz_includes REGEX "^#include \"hb-.*
 list(TRANSFORM harfbuzz_includes REPLACE "^#include \"(.*)\"$" "${CMAKE_CURRENT_SOURCE_DIR}/harfbuzz/src/\\1")
 add_library(harfbuzz STATIC ${harfbuzz_includes} harfbuzz/src/OT/Var/VARC/VARC.cc)
 target_include_directories(harfbuzz SYSTEM PUBLIC harfbuzz/src)
+#! RmlUi asks HarfBuzz to shape every text again as a self-test in builds without NDEBUG, which makes a layout several times slower.
 target_compile_definitions(harfbuzz PRIVATE HAVE_FREETYPE HAVE_FT_GET_VAR_BLEND_COORDINATES HAVE_FT_SET_VAR_BLEND_COORDINATES
-    HAVE_FT_DONE_MM_VAR HAVE_FT_GET_TRANSFORM)
+    HAVE_FT_DONE_MM_VAR HAVE_FT_GET_TRANSFORM HB_NO_BUFFER_VERIFY)
 target_link_libraries(harfbuzz PUBLIC freetype)
 target_compile_options(harfbuzz PRIVATE ${no_warnings})
 

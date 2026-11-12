@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <SDL3/SDL_events.h>
+#include <tbb/global_control.h>
 #include <tbb/task_arena.h>
 #include <tbb/task_group.h>
 
@@ -38,6 +39,8 @@ private:
     std::mutex mutex;
     std::vector<Action> queued;
     std::stop_source stop;
+    //! TBB gives a wasm32 worker 2 MB of stack, and Tint in NoorRHI needs the 4 MB that Emscripten gives a pthread.
+    tbb::global_control stackSize{tbb::global_control::thread_stack_size, 4 * 1024 * 1024};
     tbb::task_arena arena;
     tbb::task_group jobs;
 };

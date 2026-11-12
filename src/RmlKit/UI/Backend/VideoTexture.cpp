@@ -19,7 +19,7 @@ VideoTexture::VideoTexture(VideoConverter& converter, const int width, const int
     if (auto uploaded = image.upload(black); !uploaded)
         fatal(std::format("The video texture cannot clear: {}", uploaded.error().message));
     //! RmlUi releases the handle of a callback texture through the render interface.
-    handle = converter.getRenderer().addTexture(image);
+    handle = converter.getRenderer().addTexture(image, TextureMode::Premultiplied);
 }
 
 void VideoTexture::convert(const Media::VideoImage& frame) {

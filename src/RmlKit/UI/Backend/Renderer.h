@@ -27,6 +27,15 @@ protected:
     ~ExternalTextureReader() = default;
 };
 
+enum class TextureMode : std::uint32_t {
+    Premultiplied = RenderShaders::premultipliedTexture,
+    Straight = RenderShaders::straightTexture,
+    MaskRed = RenderShaders::maskTexture,
+    MaskGreen,
+    MaskBlue,
+    MaskAlpha,
+};
+
 class Renderer final : public Rml::RenderInterface {
 public:
     Renderer(NoorRHI::Device& device, NoorRHI::ImageFormat targetFormat);
@@ -36,8 +45,8 @@ public:
 
     NoorRHI::Device& getDevice() const { return device; }
     NoorRHI::CommandList& record();
-    Rml::TextureHandle addTexture(NoorRHI::Image image);
-    const NoorRHI::Image& getTexture(Rml::TextureHandle handle) const { return textures.get(handle); }
+    Rml::TextureHandle addTexture(NoorRHI::Image image, TextureMode mode);
+    const NoorRHI::Image& getTexture(Rml::TextureHandle handle) const { return textures.get(handle).image; }
 
     void beginFrame(Rml::Vector2i size);
     NoorRHI::CommandList endFrame(const NoorRHI::Image& target);
@@ -157,6 +166,11 @@ private:
         std::uint32_t stopCount = 0;
     };
 
+    struct Texture {
+        NoorRHI::Image image;
+        TextureMode mode = TextureMode::Premultiplied;
+    };
+
     struct UploadedTexture {
         Rml::TextureHandle handle;
         Rml::Vector2i dimensions;
@@ -198,7 +212,7 @@ private:
     NoorRHI::Sampler repeatSampler;
     NoorRHI::Sampler clampSampler;
 
-    Slots<NoorRHI::Image> textures;
+    Slots<Texture> textures;
     Slots<Geometry> geometries;
     Slots<Filter> filters;
     Slots<Gradient> gradients;
