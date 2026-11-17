@@ -21,7 +21,7 @@ add_subdirectory(.. rmlkit EXCLUDE_FROM_ALL)
 add_executable(RmlKitExample Application.cpp)
 target_include_directories(RmlKitExample PRIVATE "${PROJECT_SOURCE_DIR}")
 target_link_libraries(RmlKitExample PRIVATE RmlKit::RmlKit)
-target_compile_options(RmlKitExample PRIVATE -fno-exceptions)
+target_compile_options(RmlKitExample PRIVATE -fno-exceptions -fno-rtti)
 target_compile_definitions(RmlKitExample PRIVATE PRODUCT_NAME="${PROJECT_NAME}")
 rmlkit_add_app(RmlKitExample
     APPLICATION Example::Application

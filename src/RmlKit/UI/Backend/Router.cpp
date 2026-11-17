@@ -64,7 +64,7 @@ void Router::ProcessEvent(Rml::Event& event) {
         return;
     if (!event.GetParameter<int>("ctrl_key", 0) || !shown)
         return;
-    auto* field = dynamic_cast<Rml::ElementFormControlInput*>(shown->QuerySelector(".input.search input"));
+    auto* field = rmlui_dynamic_cast<Rml::ElementFormControlInput*>(shown->QuerySelector(".input.search input"));
     if (!field)
         return;
     field->Focus(true);

@@ -23,7 +23,7 @@ add_library(RmlKit STATIC ${rmlkit_sources})
 add_library(RmlKit::RmlKit ALIAS RmlKit)
 target_include_directories(RmlKit PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(RmlKit PUBLIC rmlui_backend plutovg::plutovg TBB::tbb RmlKitShaders)
-target_compile_options(RmlKit PRIVATE -fno-exceptions)
+target_compile_options(RmlKit PRIVATE -fno-exceptions -fno-rtti)
 target_compile_definitions(RmlKit
     PUBLIC PLATFORM_WINDOWS=$<BOOL:${PLATFORM_WINDOWS}> PLATFORM_LINUX=$<BOOL:${PLATFORM_LINUX}> PLATFORM_WEB=$<BOOL:${PLATFORM_WEB}>
         RMLKIT_VIDEO=$<BOOL:${RMLKIT_VIDEO}>

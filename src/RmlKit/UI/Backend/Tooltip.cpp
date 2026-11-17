@@ -19,7 +19,7 @@ constexpr float marginDp = 4.0f;
 
 //! A tooltip only names an element that shows no label, such as an icon button or a sidebar that hides its labels when narrow.
 bool showsText(const Rml::Element& element) {
-    if (const auto* text = dynamic_cast<const Rml::ElementText*>(&element))
+    if (const auto* text = rmlui_dynamic_cast<const Rml::ElementText*>(&element))
         return element.IsVisible(true) && text->GetText().find_first_not_of(" \t\n") != Rml::String::npos;
     for (int i = 0; i < element.GetNumChildren(); ++i)
         if (showsText(*element.GetChild(i)))
