@@ -7,9 +7,7 @@
 
 #include "RmlKit/UI/Backend/Hotkeys.h"
 
-//! SDL cannot read the clipboard in a browser, and the page keeps Mod+V from SDL so the browser pastes: web/shell.html sends
-//! each paste into the canvas here. A text field takes the text; anywhere else the paste is the Mod+V key, so the app's own
-//! hotkey (pasting a copied object, say) runs as it does on the desktop.
+//! web/shell.html sends each browser paste here, as SDL cannot read the clipboard: a text field takes the text, and elsewhere it runs the app's Mod+V hotkey.
 extern "C" EMSCRIPTEN_KEEPALIVE void rmlkit_paste(const char* text) {
     Rml::Context* context = Rml::GetContext("main");
     if (!context)

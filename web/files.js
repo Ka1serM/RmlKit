@@ -1,6 +1,4 @@
-//! The browser file chooser behind FileDialog. Picked files are not copied into memory: they mount read-only under /mnt,
-//! and reader workers fetch the bytes that the app reads (BrowserMountWeb.cpp). An app may replace Module.rmlkitChoose
-//! in its WEB_PRE_JS; this one stays only when the app sets none.
+//! The browser file chooser behind FileDialog: picked files mount read-only under /mnt (BrowserMountWeb.cpp), and an app's WEB_PRE_JS may replace Module.rmlkitChoose.
 
 const rmlkitReaderSource = `
 onmessage = event => {

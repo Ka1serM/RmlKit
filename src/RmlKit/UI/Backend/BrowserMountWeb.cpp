@@ -1,5 +1,4 @@
-//! The read-only mounts of files picked in the browser, see web/files.js. A read waits for a reader worker, which copies the
-//! bytes of the picked File into wasm memory, so a mounted file costs no memory until it is read.
+//! The read-only mounts of files picked in the browser (web/files.js): a reader worker copies the bytes of a read into wasm memory, so an unread file costs none.
 
 #include <algorithm>
 #include <array>
