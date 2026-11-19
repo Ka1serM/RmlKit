@@ -5,6 +5,8 @@
     <link type="text/rcss" href="../RmlKit/Styles/components.rcss"/>
     <link type="text/rcss" href="../RmlKit/Styles/window.rcss"/>
     <link type="text/rcss" href="../RmlKit/Styles/window-buttons.rcss"/>
+    <link type="text/template" href="../RmlKit/Templates/window-buttons-start.rml"/>
+    <link type="text/template" href="../RmlKit/Templates/window-buttons-end.rml"/>
     <link type="text/rcss" href="../Styles/theme.rcss"/>
     <link type="text/rcss" href="../Styles/example.rcss"/>
     <link type="text/rcss" href="../Platform/WindowButtons/style.rcss"/>
@@ -13,9 +15,7 @@
 <body id="main" data-model="app">
     <header class="title-bar">
         <div class="window-drag-region"></div>
-        <div class="window-buttons start" data-if="windowButtons &amp;&amp; windowButtonsStart.size &gt; 0" data-class-windows="windowButtonStyle == 'windows'" data-class-gnome="windowButtonStyle == 'gnome'" data-class-kde="windowButtonStyle == 'kde'" data-class-macos="windowButtonStyle == 'macos'" data-class-gtk="windowButtonStyle == 'gtk'" data-class-unfocused="!windowFocused" data-class-maximized="windowMaximized">
-            <button class="title-button" data-for="button : windowButtonsStart" data-class-close="button == 'close'" data-class-minimize="button == 'minimize'" data-class-maximize="button == 'maximize'" data-event-click="windowButton(button)"><svg data-attr-src="'/UI/RmlKit/Icons/window-' + (windowButtonStyle == 'gtk' ? 'gnome' : windowButtonStyle) + '-' + (button == 'maximize' &amp;&amp; windowMaximized ? 'restore' : button) + '.svg'"/></button>
-        </div>
+        <template src="rmlkit-window-buttons-start"/>
         <div class="title-left">
             <svg class="wordmark example-mark" src="../../assets/icon.svg"/>
             <span class="title-card">{{ productName }}</span>
@@ -25,9 +25,7 @@
             </div>
         </div>
         <div class="title-right">
-            <div class="window-buttons end" data-if="windowButtons &amp;&amp; windowButtonsEnd.size &gt; 0" data-class-windows="windowButtonStyle == 'windows'" data-class-gnome="windowButtonStyle == 'gnome'" data-class-kde="windowButtonStyle == 'kde'" data-class-macos="windowButtonStyle == 'macos'" data-class-gtk="windowButtonStyle == 'gtk'" data-class-unfocused="!windowFocused" data-class-maximized="windowMaximized">
-                <button class="title-button" data-for="button : windowButtonsEnd" data-class-close="button == 'close'" data-class-minimize="button == 'minimize'" data-class-maximize="button == 'maximize'" data-event-click="windowButton(button)"><svg data-attr-src="'/UI/RmlKit/Icons/window-' + (windowButtonStyle == 'gtk' ? 'gnome' : windowButtonStyle) + '-' + (button == 'maximize' &amp;&amp; windowMaximized ? 'restore' : button) + '.svg'"/></button>
-            </div>
+            <template src="rmlkit-window-buttons-end"/>
         </div>
     </header>
 
