@@ -88,6 +88,13 @@ void WindowChrome::showMaximized() {
     model.dirty("windowMaximized");
 }
 
+void WindowChrome::showFocused(const bool focused) {
+    if (model.windowFocused == focused)
+        return;
+    model.windowFocused = focused;
+    model.dirty("windowFocused");
+}
+
 void WindowChrome::handle(const SDL_Event& event) {
     switch (event.type) {
     case SDL_EVENT_WINDOW_MAXIMIZED:
@@ -96,10 +103,22 @@ void WindowChrome::handle(const SDL_Event& event) {
     case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
         return showMaximized();
     case SDL_EVENT_WINDOW_FOCUS_GAINED:
+        focusLossDeferred = false;
+        return showFocused(true);
     case SDL_EVENT_WINDOW_FOCUS_LOST:
-        model.windowFocused = event.type == SDL_EVENT_WINDOW_FOCUS_GAINED;
-        model.dirty("windowFocused");
-        return;
+        //! A Wayland compositor takes the keyboard while it moves or resizes the window from a press on the chrome, but the window stays active, as GTK shows.
+        if (wayland && lastHitTest != SDL_HITTEST_NORMAL) {
+            focusLossDeferred = true;
+            return;
+        }
+        return showFocused(false);
+    case SDL_EVENT_MOUSE_MOTION:
+        //! The keyboard did not come back when the move ended, so another window has it.
+        if (focusLossDeferred && lastHitTest == SDL_HITTEST_NORMAL && SDL_GetKeyboardFocus() != window) {
+            focusLossDeferred = false;
+            showFocused(false);
+        }
+        break;
     default:
         break;
     }

@@ -41,6 +41,7 @@ private:
     void pressWindowButton(Rml::DataModelHandle, Rml::Event&, const Rml::VariantList& arguments);
     void toggleMaximized();
     void showMaximized();
+    void showFocused(bool focused);
 
     Rml::Context& context;
     Model& model;
@@ -49,6 +50,7 @@ private:
     const bool wayland;
     SDL_HitTestResult lastHitTest = SDL_HITTEST_NORMAL;
     bool lastHitTitleBar = false;
+    bool focusLossDeferred = false;
     Uint64 lastDragPress = 0;
     bool maximizeAfterMove = false;
     Uint64 lastMaximizeToggle = 0;

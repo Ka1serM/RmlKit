@@ -303,7 +303,7 @@ std::optional<GtkWindowButtons> renderGtkWindowButtons() {
                 const std::string image = file + state.suffix + ".png";
                 result.files.emplace(image, std::move(*png));
                 rules += std::format(".window-buttons.gtk{}{} .title-button.{}{} {{ width: {}dp; height: {}dp; decorator: image(/UI/Platform/WindowButtons/{}); }}\n",
-                                     maximized ? ".maximized" : "", state.backdrop ? ".backdrop" : "", name, state.selector, size.width, size.height, image);
+                                     maximized ? ".maximized" : "", state.backdrop ? ".unfocused" : "", name, state.selector, size.width, size.height, image);
             }
             if (maximized)
                 gtk.removeCssClass(window, "maximized");

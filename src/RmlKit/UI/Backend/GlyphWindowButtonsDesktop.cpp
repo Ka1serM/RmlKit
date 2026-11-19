@@ -77,15 +77,15 @@ std::optional<std::map<std::string, std::string, std::less<>>> renderGlyphWindow
     const auto image = [](const char* name, const char* suffix) { return std::format("decorator: image(/UI/Platform/WindowButtons/{}{}.png contain);", name, suffix); };
     std::string style = ".window-buttons.windows .title-button svg { display: none; }\n";
     for (const char* suffix : {"", "-backdrop"}) {
-        const std::string group = *suffix ? ".window-buttons.windows.backdrop" : ".window-buttons.windows";
+        const std::string group = *suffix ? ".window-buttons.windows.unfocused" : ".window-buttons.windows";
         for (const char* name : {"minimize", "maximize", "close"})
             style += std::format("{} .title-button.{} {{ {} }}\n", group, name, image(name, suffix));
         style += std::format("{}.maximized .title-button.maximize {{ {} }}\n", group, image("restore", suffix));
     }
     //! An inactive window shows a button at full strength under the mouse, and its close button turns red.
     for (const char* name : {"minimize", "maximize", "close"})
-        style += std::format(".window-buttons.windows.backdrop .title-button.{}:hover {{ {} }}\n", name, image(name, ""));
-    style += std::format(".window-buttons.windows.backdrop.maximized .title-button.maximize:hover {{ {} }}\n", image("restore", ""));
+        style += std::format(".window-buttons.windows.unfocused .title-button.{}:hover {{ {} }}\n", name, image(name, ""));
+    style += std::format(".window-buttons.windows.unfocused.maximized .title-button.maximize:hover {{ {} }}\n", image("restore", ""));
     files.emplace("style.rcss", std::move(style));
     return files;
 }

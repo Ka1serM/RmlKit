@@ -1,6 +1,7 @@
 /*! Title bar buttons in the style of the platform: .window-buttons gets windows, gnome, kde, macos or gtk from windowButtonStyle; /UI/Platform/WindowButtons/style.rcss styles gtk with the images GTK drew. */
 
-.window-buttons { flex: 0 0 auto; display: flex; align-items: center; }
+/*! Positioned, so the buttons sit above the .window-drag-region that covers the title bar and take the pointer. */
+.window-buttons { position: relative; flex: 0 0 auto; display: flex; align-items: center; }
 
 .window-buttons .title-button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
 

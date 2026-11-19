@@ -66,7 +66,7 @@ public:
     Rml::String productName;
     bool windowButtons = !PLATFORM_WEB;
     bool windowMaximized = false;
-    //! False while another window has the keyboard, as GTK shows with its backdrop state.
+    //! False while another window has the keyboard; the title bar buttons then get the class unfocused, as GTK shows its backdrop state.
     bool windowFocused = true;
     //! The title bar buttons of the platform, from WindowButtonLayout.
     Rml::String windowButtonStyle;
