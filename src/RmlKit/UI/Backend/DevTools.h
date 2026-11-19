@@ -20,7 +20,9 @@ public:
     bool handle(const SDL_Event& event);
 
 private:
+    Rml::Context& context;
     Router& router;
+    bool initialised = false;
 };
 
 }

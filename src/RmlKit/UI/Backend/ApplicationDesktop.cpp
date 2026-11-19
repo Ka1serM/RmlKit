@@ -3,9 +3,11 @@
 #include <algorithm>
 #include <cmath>
 #include <format>
+#include <memory>
 #include <utility>
 
 #include <SDL3/SDL_hints.h>
+#include <SDL3/SDL_video.h>
 
 #include "RmlKit/UI/Backend/Fatal.h"
 
@@ -64,5 +66,34 @@ bool SDLCALL Application::watchEvent(void* application, SDL_Event* event) {
     return true;
 }
 #endif
+
+SecondaryWindow& Application::openWindow(const WindowOptions& options) {
+    framePending = true;
+    return *windows.emplace_back(std::make_unique<SecondaryWindow>(device, options));
+}
+
+SecondaryWindow* Application::findWindow(const SDL_Event& event) const {
+    SDL_Window* native = SDL_GetWindowFromEvent(&event);
+    if (!native || native == window.getNative())
+        return nullptr;
+    for (const std::unique_ptr<SecondaryWindow>& secondary : windows)
+        if (secondary->getNative() == native)
+            return secondary.get();
+    return nullptr;
+}
+
+bool Application::routeToWindow(SDL_Event& event) {
+    SecondaryWindow* secondary = findWindow(event);
+    if (!secondary)
+        return false;
+    secondary->getView().handle(event);
+    return true;
+}
+
+void Application::draw() {
+    view.draw();
+    for (const std::unique_ptr<SecondaryWindow>& secondary : windows)
+        secondary->getView().draw();
+}
 
 }

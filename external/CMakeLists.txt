@@ -10,7 +10,10 @@ function(add_external_subdirectory source)
     set_directory_properties(PROPERTIES COMPILE_OPTIONS "${options}")
 endfunction()
 
-set(submodules freetype harfbuzz lunasvg NoorRHI oneTBB RmlUi SDL)
+set(submodules freetype harfbuzz lunasvg oneTBB RmlUi SDL)
+if(NOT TARGET NoorRHI::NoorRHI)
+    list(APPEND submodules NoorRHI)
+endif()
 if(RMLKIT_VIDEO)
     list(APPEND submodules FFmpeg)
 endif()
@@ -38,8 +41,11 @@ if(PLATFORM_LINUX)
 endif()
 add_external_subdirectory(SDL)
 
-# NoorRHI draws the UI: Vulkan on the desktop and WebGPU on the web.
-add_subdirectory(NoorRHI EXCLUDE_FROM_ALL)
+# NoorRHI draws the UI: Vulkan on the desktop and WebGPU on the web. A parent project that already has NoorRHI shares it
+# with RmlKit.
+if(NOT TARGET NoorRHI::NoorRHI)
+    add_subdirectory(NoorRHI EXCLUDE_FROM_ALL)
+endif()
 
 # FreeType, the TrueType core only. The function scope keeps an earlier find_package result, such as ZLIB_FOUND, from
 # enabling a disabled codec.

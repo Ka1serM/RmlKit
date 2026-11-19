@@ -3,10 +3,8 @@
 #include <cstdint>
 #include <format>
 #include <limits>
-#include <unordered_set>
+#include <algorithm>
 
-#include <RmlUi/Core/ElementDocument.h>
-#include <RmlUi_Platform_SDL.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_video.h>
@@ -30,26 +28,18 @@ Application::Sdl::~Sdl() {
 }
 
 Application::Application()
-    : window(PRODUCT_NAME, 1600, 1056), rml(window), context(createContext(window.pixelSize())), model(*context), logRoute(rml.getSystem(), model),
-      chrome(*context, model, window.getNative(), [this] { running = false; }), linkDrag(*context, model, window.getNative()),
-      fileDrop(*context, window.getNative()), router(*context, model), tooltip(*context), messageBoxes(*context, model), logs(model) {
+    : window(device, {}), rml(window), view(window, "main", [this] { running = false; }), logRoute(rml.getSystem(), getModel()),
+      linkDrag(getContext(), getModel(), window.getNative()), fileDrop(getContext(), window.getNative()), router(getContext(), getModel()),
+      messageBoxes(getContext(), getModel()), logs(getModel()) {
 #ifndef NDEBUG
-    devTools.emplace(*context, router);
+    devTools.emplace(getContext(), router);
 #endif
-    context->SetDensityIndependentPixelRatio(SDL_GetWindowDisplayScale(window.getNative()));
     wakeEvent = SDL_RegisterEvents(1);
     if (wakeEvent == 0)
         fatal(std::format("SDL_RegisterEvents failed: {}", SDL_GetError()));
     watchResize();
     if (auto installed = installDesktopEntry(); !installed)
-        model.report(ReportLevel::Warning, "desktop", std::format("The launcher is not installed: {}", installed.error().message));
-}
-
-std::unique_ptr<Rml::Context, Application::ContextRemover> Application::createContext(const Rml::Vector2i size) {
-    std::unique_ptr<Rml::Context, ContextRemover> context(Rml::CreateContext("main", size));
-    if (!context)
-        fatal("RmlUi cannot create the main context");
-    return context;
+        getModel().report(ReportLevel::Warning, "desktop", std::format("The launcher is not installed: {}", installed.error().message));
 }
 
 Application::~Application() {
@@ -58,10 +48,26 @@ Application::~Application() {
     unwatchResize();
 }
 
+void Application::removeClosedWindows() {
+    std::erase_if(windows, [this](const std::unique_ptr<SecondaryWindow>& secondary) {
+        if (secondary->isOpen())
+            return false;
+        windowClosed(*secondary);
+#if PLATFORM_WEB
+        for (SecondaryWindow** reference : {&pointerWindow, &keyWindow, &draggedWindow})
+            if (*reference == secondary.get())
+                *reference = nullptr;
+#endif
+        framePending = true;
+        return true;
+    });
+}
+
 double Application::nextFrameDelay() const {
-    if (!window.drawable())
-        return std::numeric_limits<double>::infinity();
-    return context->GetNextUpdateDelay() - static_cast<double>(SDL_GetTicksNS() - lastUpdateNs) / SDL_NS_PER_SECOND;
+    double delay = view.nextFrameDelay();
+    for (const std::unique_ptr<SecondaryWindow>& secondary : windows)
+        delay = std::min(delay, secondary->getView().nextFrameDelay());
+    return delay;
 }
 
 void Application::closeDocuments() {
@@ -69,9 +75,9 @@ void Application::closeDocuments() {
     //! The debugger owns documents of the context, and RmlUi crashes when they unload before it shuts down.
     devTools.reset();
 #endif
-    context->UnloadAllDocuments();
+    getContext().UnloadAllDocuments();
     //! RmlUi releases unloaded documents, and with them their elements, in the next update.
-    context->Update();
+    getContext().Update();
 }
 
 void Application::handle(const SDL_Event& event) {
@@ -108,6 +114,7 @@ bool Application::iterate() {
     flushMotion();
     if (!running)
         return false;
+    removeClosedWindows();
     constexpr double dueWithinSeconds = 0.001;
     if (framePending || nextFrameDelay() <= dueWithinSeconds) {
         framePending = false;
@@ -122,65 +129,21 @@ void Application::dispatch(SDL_Event& event) {
         return;
     if (dispatcher.dispatch(event))
         return;
-    chrome.handle(event);
+    if (routeToWindow(event))
+        return;
+    if (handleEvent(event))
+        return;
     linkDrag.handle(event);
     fileDrop.handle(event);
 #ifndef NDEBUG
     if (devTools && devTools->handle(event))
         return;
 #endif
-    switch (event.type) {
-    case SDL_EVENT_QUIT:
-    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+    if (event.type == SDL_EVENT_QUIT) {
         running = false;
         return;
-    case SDL_EVENT_TEXT_EDITING:
-        rml.getTextInput().HandleEdit(event.edit);
-        return;
-    default:
-        RmlSDL::InputEventHandler(context.get(), window.getNative(), event);
     }
-}
-
-void Application::draw() {
-    if (!window.drawable())
-        return;
-    window.prepare(*context);
-    update();
-    window.render(*context);
-}
-
-void Application::update() {
-    //! An RmlUi layout can change the data model, so the extra updates lay out that change before the frame draws.
-    constexpr int maxExtraUpdates = 2;
-    model.takeChanged();
-    lastUpdateNs = SDL_GetTicksNS();
-    refreshArrivedTextures();
-    applyColorScheme();
-    context->Update();
-    for (int extra = 0; extra < maxExtraUpdates && model.takeChanged(); ++extra)
-        context->Update();
-}
-
-void Application::applyColorScheme() {
-    const bool light = SDL_GetSystemTheme() == SDL_SYSTEM_THEME_LIGHT;
-    for (int i = 0; i < context->GetNumDocuments(); ++i)
-        context->GetDocument(i)->SetClass("light", light);
-}
-
-void Application::refreshArrivedTextures() {
-    const std::unordered_set<Rml::String> arrived = window.getRenderer().takeArrivedSources();
-    if (arrived.empty())
-        return;
-    Rml::ElementList images;
-    for (int i = 0; i < context->GetNumDocuments(); ++i)
-        context->GetDocument(i)->GetElementsByTagName(images, "img");
-    //! RmlUi does not lay out an image again when its texture arrives; setting the same src does.
-    for (Rml::Element* const image : images) {
-        const Rml::String source = image->GetAttribute<Rml::String>("src", "");
-        if (arrived.contains(source))
-            image->SetAttribute("src", source);
-    }
+    view.handle(event);
 }
 
 }

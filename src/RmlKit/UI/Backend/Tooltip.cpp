@@ -6,6 +6,8 @@
 #include <RmlUi/Core/ElementDocument.h>
 #include <RmlUi/Core/ElementText.h>
 
+#include "RmlKit/UI/Backend/Hotkeys.h"
+
 namespace RmlKit::UI {
 
 namespace {
@@ -68,7 +70,9 @@ Rml::String Tooltip::markupOf(const Rml::Element& host) {
     const Rml::String text = host.GetAttribute<Rml::String>(hostAttribute, "");
     if (text.empty())
         return {};
-    const Rml::String key = host.GetAttribute<Rml::String>(keyAttribute, "");
+    Rml::String key = host.GetAttribute<Rml::String>(keyAttribute, "");
+    if (const std::optional<Hotkey> hotkey = parseHotkey(host.GetAttribute<Rml::String>("hotkey", "")); key.empty() && hotkey)
+        key = formatHotkey(*hotkey);
     const Rml::String label = "<span>" + text + "</span>";
     return key.empty() ? label : label + "<span class=\"kbd\">" + key + "</span>";
 }

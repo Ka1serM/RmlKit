@@ -1,5 +1,6 @@
 #include "RmlKit/UI/Models/Model.h"
 
+#include <algorithm>
 #include <chrono>
 #include <ctime>
 #include <format>
@@ -16,6 +17,7 @@
 
 #include "RmlKit/Core/LocalTime.h"
 #include "RmlKit/UI/Backend/Fatal.h"
+#include "RmlKit/UI/Backend/WindowButtonLayout.h"
 
 namespace RmlKit::UI {
 
@@ -41,10 +43,61 @@ Model::Model(Rml::Context& context) : productName(PRODUCT_NAME), context(context
     bind(constructor, messageBox);
     constructor.Bind("productName", &productName);
     constructor.Bind("windowButtons", &windowButtons);
+    constructor.Bind("windowMaximized", &windowMaximized);
+    constructor.Bind("windowFocused", &windowFocused);
+    const WindowButtonLayout& layout = getWindowButtonLayout();
+    windowButtonStyle = layout.style;
+    windowButtonsStart = layout.start;
+    windowButtonsEnd = layout.end;
+    constructor.Bind("windowButtonStyle", &windowButtonStyle);
+    constructor.Bind("windowButtonsStart", &windowButtonsStart);
+    constructor.Bind("windowButtonsEnd", &windowButtonsEnd);
 }
 
 Model::~Model() {
+    if (source)
+        std::erase(source->windows, this);
+    for (Model* window : windows)
+        window->source = nullptr;
     context.RemoveDataModel(modelName);
+}
+
+void Model::bindData(Binder binder) {
+    binder(constructor);
+    for (Model* window : windows)
+        binder(window->constructor);
+    binders.push_back(std::move(binder));
+}
+
+void Model::share(Model& window) {
+    if (window.source || !window.binders.empty() || !window.windows.empty())
+        fatal("A window model can share only one model and must have no shared bindings of its own.");
+    for (Binder& binder : binders)
+        binder(window.constructor);
+    window.source = this;
+    windows.push_back(&window);
+}
+
+void Model::dirty(const Rml::String& variable) {
+    Model& root = source ? *source : *this;
+    root.handle.DirtyVariable(variable);
+    root.changed = true;
+    for (Model* window : root.windows) {
+        window->handle.DirtyVariable(variable);
+        window->changed = true;
+    }
+}
+
+void Model::refreshShared() {
+    Model& root = source ? *source : *this;
+    std::vector<Model*> group = root.windows;
+    group.push_back(&root);
+    for (Model* model : group) {
+        if (model == this)
+            continue;
+        model->handle.DirtyAllVariables();
+        model->changed = true;
+    }
 }
 
 void Model::report(const ReportLevel level, const Rml::String& source, Rml::String message) {

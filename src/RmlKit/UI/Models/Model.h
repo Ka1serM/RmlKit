@@ -2,6 +2,8 @@
 
 #include <cstddef>
 #include <format>
+#include <functional>
+#include <vector>
 #include <utility>
 
 #include <RmlUi/Core/DataModelHandle.h>
@@ -28,16 +30,27 @@ public:
     Model(const Model&) = delete;
     Model& operator=(const Model&) = delete;
 
+    using Binder = std::function<void(Rml::DataModelConstructor&)>;
+
+    void bindData(Binder binder);
     //! RmlUi cannot unbind an event, so the owner must outlive the model.
     template <typename Owner>
     void bindEvent(const Rml::String& name, Rml::DataModelConstructor::DataEventMemberFunc<Owner> callback, Owner* owner) {
+        bindData([name, callback, owner](Rml::DataModelConstructor& constructor) {
+            if (!constructor.BindEventCallback(name, callback, owner))
+                fatal(std::format("RmlUi cannot bind the data event {}", name));
+        });
+    }
+    //! An event of one window stays in that window's model, out of the bindings a shared model passes on.
+    template <typename Owner>
+    void bindWindowEvent(const Rml::String& name, Rml::DataModelConstructor::DataEventMemberFunc<Owner> callback, Owner* owner) {
         if (!constructor.BindEventCallback(name, callback, owner))
             fatal(std::format("RmlUi cannot bind the data event {}", name));
     }
-    void dirty(const Rml::String& variable) {
-        handle.DirtyVariable(variable);
-        changed = true;
-    }
+    void share(Model& window);
+    //! A data view in one window writes its value straight into the variable, so the other windows of the group look at every variable again.
+    void refreshShared();
+    void dirty(const Rml::String& variable);
     bool takeChanged() { return std::exchange(changed, false); }
     void report(ReportLevel level, const Rml::String& source, Rml::String message);
 
@@ -52,14 +65,23 @@ public:
     MessageBoxModel messageBox;
     Rml::String productName;
     bool windowButtons = !PLATFORM_WEB;
+    bool windowMaximized = false;
+    //! False while another window has the keyboard, as GTK shows with its backdrop state.
+    bool windowFocused = true;
+    //! The title bar buttons of the platform, from WindowButtonLayout.
+    Rml::String windowButtonStyle;
+    std::vector<Rml::String> windowButtonsStart;
+    std::vector<Rml::String> windowButtonsEnd;
 
-    Rml::DataModelConstructor& getConstructor() { return constructor; }
 
 private:
     Rml::Context& context;
     Rml::DataModelConstructor constructor;
     Rml::DataModelHandle handle;
     bool changed = false;
+    std::vector<Binder> binders;
+    std::vector<Model*> windows;
+    Model* source = nullptr;
 };
 
 }

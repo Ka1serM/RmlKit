@@ -44,6 +44,14 @@ elseif(PLATFORM_LINUX)
     pkg_check_modules(WAYLAND_CLIENT REQUIRED IMPORTED_TARGET wayland-client)
     target_link_libraries(RmlKit PUBLIC PkgConfig::WAYLAND_CLIENT)
 elseif(PLATFORM_WEB)
-    target_link_options(RmlKit INTERFACE "--js-library=${PROJECT_SOURCE_DIR}/web/library.js")
-    set_property(TARGET RmlKit APPEND PROPERTY INTERFACE_LINK_DEPENDS "${PROJECT_SOURCE_DIR}/web/library.js")
+    target_link_options(RmlKit INTERFACE "--js-library=${PROJECT_SOURCE_DIR}/web/library.js" "--pre-js=${PROJECT_SOURCE_DIR}/web/files.js")
+    set_property(TARGET RmlKit APPEND PROPERTY INTERFACE_LINK_DEPENDS "${PROJECT_SOURCE_DIR}/web/library.js;${PROJECT_SOURCE_DIR}/web/files.js")
+    #! Only web/files.js calls the mount functions, so nothing else pulls BrowserMountWeb.cpp out of the static library.
+    #! The JS side calls these exports only by name, so the linker would drop their objects from the static library.
+    foreach(export IN ITEMS rmlkit_mount_open rmlkit_mount_add rmlkit_mount_remove rmlkit_mount_slot rmlkit_paste rmlkit_url_view
+                            rmlkit_dialog_chosen rmlkit_dialog_cancelled rmlkit_dialog_error)
+        target_link_options(RmlKit INTERFACE "-Wl,--undefined=${export}")
+    endforeach()
+    #! BrowserMountWeb.cpp is a WasmFS backend, which only the own headers of Emscripten declare.
+    target_include_directories(RmlKit SYSTEM PRIVATE "${EMSCRIPTEN_ROOT_PATH}/system/lib/wasmfs")
 endif()

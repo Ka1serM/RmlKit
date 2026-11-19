@@ -16,6 +16,9 @@ public:
     void setModel(Model* model) { this->model = model; }
     bool LogMessage(Rml::Log::Type type, const Rml::String& message) override;
     void SetMouseCursor(const Rml::String& cursorName) override;
+    //! RmlUi has one system interface for all contexts, so the keyboard goes to the window that has the keyboard focus.
+    void ActivateKeyboard(Rml::Vector2f caretPosition, float lineHeight) override;
+    void DeactivateKeyboard() override;
 #if PLATFORM_WEB
     //! SDL has no browser clipboard: it keeps the text to itself. This also hands it to the page (ClipboardWeb.cpp).
     void SetClipboardText(const Rml::String& text) override;

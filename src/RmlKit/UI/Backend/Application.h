@@ -2,6 +2,7 @@
 
 #include <expected>
 #include <memory>
+#include <vector>
 #include <optional>
 
 #include <RmlUi/Core/Context.h>
@@ -18,9 +19,9 @@
 #include "RmlKit/UI/Backend/MessageBoxService.h"
 #include "RmlKit/UI/Backend/RmlRuntime.h"
 #include "RmlKit/UI/Backend/Router.h"
-#include "RmlKit/UI/Backend/Tooltip.h"
+#include "RmlKit/UI/Backend/SecondaryWindow.h"
 #include "RmlKit/UI/Backend/Window.h"
-#include "RmlKit/UI/Backend/WindowChrome.h"
+#include "RmlKit/UI/Backend/WindowView.h"
 #include "RmlKit/UI/Controllers/LogsController.h"
 #include "RmlKit/UI/Models/Model.h"
 
@@ -41,8 +42,10 @@ public:
     void stopJobs() { dispatcher.stopJobs(); }
 
 protected:
-    Model& getModel() { return model; }
+    Model& getModel() { return view.getModel(); }
     Router& getRouter() { return router; }
+    Hotkeys& getHotkeys() { return view.getHotkeys(); }
+    Rml::Context& getContext() { return view.getContext(); }
     Renderer& getRenderer() { return window.getRenderer(); }
     SDL_Window* getWindow() const { return window.getNative(); }
 #if RMLKIT_VIDEO
@@ -50,6 +53,11 @@ protected:
 #endif
 
     void closeDocuments();
+    //! The window stays valid until windowClosed returns for it.
+    SecondaryWindow& openWindow(const WindowOptions& options);
+    virtual void windowClosed(SecondaryWindow&) {}
+    //! Sees every SDL event before RmlUi does; returning true keeps the event from RmlUi.
+    virtual bool handleEvent(const SDL_Event&) { return false; }
 
 private:
     class Sdl {
@@ -63,13 +71,8 @@ private:
         static void setPlatformHints();
     };
 
-    struct ContextRemover {
-        void operator()(Rml::Context* context) const noexcept { Rml::RemoveContext(context->GetName()); }
-    };
-
     //! On Linux, writes the app's launcher and icon to the user's data folder, so the desktop lists the app and shows its icon on Wayland. It keeps a launcher that the user edited, and does nothing in a Flatpak, on Windows, on the web, or when rmlkit_add_app had no ICON.
     static std::expected<void, Core::Error> installDesktopEntry();
-    static std::unique_ptr<Rml::Context, ContextRemover> createContext(Rml::Vector2i size);
 #if PLATFORM_WINDOWS
     static bool SDLCALL watchEvent(void* application, SDL_Event* event);
 #endif
@@ -83,22 +86,35 @@ private:
     void scheduleNextFrame();
     void scheduleWake(double seconds);
     void draw();
-    void update();
-    void applyColorScheme();
-    void refreshArrivedTextures();
+    void removeClosedWindows();
+    //! Gives the event to the secondary window that it belongs to; false when it belongs to the main window.
+    bool routeToWindow(SDL_Event& event);
+#if PLATFORM_WEB
+    bool routePointer(SDL_Event& event);
+    SecondaryWindow* overlayAt(Rml::Vector2f point) const;
+    void raise(SecondaryWindow& overlay);
+#else
+    SecondaryWindow* findWindow(const SDL_Event& event) const;
+#endif
 
     Sdl sdl;
     Dispatcher dispatcher;
+    NoorRHI::Device device;
     Window window;
     RmlRuntime rml;
-    std::unique_ptr<Rml::Context, ContextRemover> context;
-    Model model;
+    WindowView view;
+    std::vector<std::unique_ptr<SecondaryWindow>> windows;
+#if PLATFORM_WEB
+    //! The overlay under the pointer, or the one that a held button keeps it in; null for the main window.
+    SecondaryWindow* pointerWindow = nullptr;
+    SecondaryWindow* keyWindow = nullptr;
+    SecondaryWindow* draggedWindow = nullptr;
+    Uint32 heldButtons = 0;
+#endif
     LogRoute logRoute;
-    WindowChrome chrome;
     LinkDrag linkDrag;
     FileDrop fileDrop;
     Router router;
-    Tooltip tooltip;
     MessageBoxService messageBoxes;
     LogsController logs;
 #ifndef NDEBUG
@@ -106,7 +122,6 @@ private:
 #endif
     bool running = true;
     bool framePending = true;
-    Uint64 lastUpdateNs = 0;
     std::optional<SDL_Event> pendingMotion;
     Uint32 wakeEvent = 0;
     SDL_TimerID wakeTimer = 0;

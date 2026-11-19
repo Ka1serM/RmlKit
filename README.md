@@ -86,8 +86,9 @@ is gone, and writes nothing in a Flatpak.
 
 `cmake/Emsdk.cmake` installs the pinned Emscripten into the `external/emsdk` submodule on the first configure.
 `tools/serve_web.py` serves a build with the headers that threads need. The page sets `Module.rmlkitCopy`,
-`Module.rmlkitShowLinkDrag` and `Module.rmlkitHideLinkDrag`; an app that opens files sets `Module.rmlkitChoose` in its
-`WEB_PRE_JS`.
+`Module.rmlkitShowLinkDrag` and `Module.rmlkitHideLinkDrag`. `web/files.js` gives `FileDialog` its browser picker: picked
+files and folders mount read-only under `/mnt`, and reader workers read them on demand, so a picked file is never copied
+whole into memory. An app with its own picker sets `Module.rmlkitChoose` in its `WEB_PRE_JS`.
 
 ## Dependencies
 

@@ -3,16 +3,21 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <optional>
 
 #include "RmlKit/UI/Backend/EmbeddedResources.h"
+#include "RmlKit/UI/Backend/WindowButtonLayout.h"
 
 namespace RmlKit::UI {
 
 Rml::FileHandle EmbeddedFileInterface::Open(const Rml::String& path) {
-    if (!EmbeddedResources::exists(path))
+    std::optional<std::string_view> data = readPlatformFile(path);
+    if (!data && EmbeddedResources::exists(path))
+        data = EmbeddedResources::read(path);
+    if (!data)
         return 0;
     const Rml::FileHandle handle = nextHandle++;
-    openFiles.emplace(handle, OpenFile{.data = EmbeddedResources::read(path)});
+    openFiles.emplace(handle, OpenFile{.data = *data});
     return handle;
 }
 
@@ -51,6 +56,10 @@ size_t EmbeddedFileInterface::Length(const Rml::FileHandle handle) {
 }
 
 bool EmbeddedFileInterface::LoadFile(const Rml::String& path, Rml::String& outData) {
+    if (const std::optional<std::string_view> data = readPlatformFile(path)) {
+        outData.assign(*data);
+        return true;
+    }
     if (!EmbeddedResources::exists(path))
         return false;
     outData.assign(EmbeddedResources::read(path));

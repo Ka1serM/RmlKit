@@ -162,19 +162,29 @@ Rml::TextureHandle Renderer::addTexture(NoorRHI::Image image, const TextureMode 
 void Renderer::beginFrame(const Rml::Vector2i size) {
     if (size != viewport)
         openTargets(size);
-    projection = Rml::Matrix4f::ProjectOrtho(0.0f, static_cast<float>(size.x), static_cast<float>(size.y), 0.0f, -10000.0f, 10000.0f);
-    SetTransform(nullptr);
+    setOrigin({});
     scissor.reset();
     clipMask = false;
     stencilTest = 1;
     layerCount = 0;
-    PushLayer();
+    const NoorRHI::Image& base = acquireLayer();
+    commands.beginRender({.color = &base, .depth = &stencil, .clear = true, .clearColor = {0.0f, 0.0f, 0.0f, 0.0f}});
+    passTarget = base;
+    applyScissor();
+    commands.setStencilReference(stencilReference);
+}
+
+void Renderer::setOrigin(const Rml::Vector2i newOrigin) {
+    origin = newOrigin;
+    const Rml::Matrix4f frame = Rml::Matrix4f::ProjectOrtho(0.0f, static_cast<float>(viewport.x), static_cast<float>(viewport.y), 0.0f, -10000.0f, 10000.0f);
+    projection = frame * Rml::Matrix4f::Translate(static_cast<float>(origin.x), static_cast<float>(origin.y), 0.0f);
+    SetTransform(nullptr);
 }
 
 NoorRHI::CommandList Renderer::endFrame(const NoorRHI::Image& target) {
-    resolve(0);
+    resolve(0, Rml::Rectanglei::FromSize(viewport));
     layerCount = 0;
-    commands.beginRender({.color = &target, .clear = true, .clearColor = {0.0f, 0.0f, 0.0f, 1.0f}});
+    commands.beginRender({.color = &target, .clear = true, .clearColor = {0.0f, 0.0f, 0.0f, 0.0f}});
     commands.draw(pipelines[static_cast<std::size_t>(Program::Present)], 6, 1, fullscreen(postprocess[0]));
     commands.endRender();
     return std::exchange(commands, NoorRHI::CommandList(device));
@@ -223,9 +233,9 @@ void Renderer::swapPostprocess() {
     std::swap(postprocess[0], postprocess[1]);
 }
 
-void Renderer::resolve(const Rml::LayerHandle layer) {
+void Renderer::resolve(const Rml::LayerHandle layer, const Rml::Rectanglei area) {
     endPass();
-    commands.beginRender({.color = &layers[layer], .resolve = &postprocess[0], .clear = false});
+    commands.beginRender({.color = &layers[layer], .resolve = &postprocess[0], .area = toRect(area), .clear = false});
     commands.endRender();
 }
 
@@ -430,7 +440,7 @@ void Renderer::EnableScissorRegion(const bool enable) {
 }
 
 void Renderer::SetScissorRegion(const Rml::Rectanglei region) {
-    setScissor(region);
+    setScissor(region.Translate(origin));
 }
 
 void Renderer::EnableClipMask(const bool enable) {
@@ -469,17 +479,19 @@ void Renderer::SetTransform(const Rml::Matrix4f* const newTransform) {
 }
 
 Rml::LayerHandle Renderer::PushLayer() {
+    draw(acquireLayer(), Program::LayerClear, fullscreen(postprocess[0]));
+    return layerCount - 1;
+}
+
+const NoorRHI::Image& Renderer::acquireLayer() {
     if (layerCount == layers.size())
         layers.push_back(openImage(viewport, colorFormat, NoorRHI::ImageUsage::ColorAttachment, layerSamples));
-    ++layerCount;
-    RenderShaders::PassArguments arguments = fullscreen(postprocess[0]);
-    draw(layers[layerCount - 1], Program::LayerClear, arguments);
-    return layerCount - 1;
+    return layers[layerCount++];
 }
 
 void Renderer::CompositeLayers(const Rml::LayerHandle source, const Rml::LayerHandle destination, const Rml::BlendMode blendMode,
                                const Rml::Span<const Rml::CompiledFilterHandle> filterHandles) {
-    resolve(source);
+    resolve(source, getScissorOrViewport());
     renderFilters(filterHandles);
     const Program program = blendMode == Rml::BlendMode::Replace ? Program::CompositeReplace : Program::Composite;
     draw(layers[destination], clipped(program), fullscreen(postprocess[0]));
@@ -496,13 +508,13 @@ Rml::TextureHandle Renderer::SaveLayerAsTexture() {
         return {};
     }
     NoorRHI::Image image = openImage(bounds.Size(), colorFormat, NoorRHI::ImageUsage::Sampled, 1);
-    resolve(layerCount - 1);
+    resolve(layerCount - 1, bounds);
     commands.copy(postprocess[0], image, toRect(bounds));
     return addTexture(std::move(image), TextureMode::Premultiplied);
 }
 
 Rml::CompiledFilterHandle Renderer::SaveLayerAsMaskImage() {
-    resolve(layerCount - 1);
+    resolve(layerCount - 1, getScissorOrViewport());
     draw(blendMask, Program::Copy, fullscreen(postprocess[0]));
     return filters.add({.type = FilterType::MaskImage});
 }

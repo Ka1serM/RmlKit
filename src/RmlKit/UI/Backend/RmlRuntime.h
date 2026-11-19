@@ -8,6 +8,7 @@
 #include "RmlKit/UI/Backend/LogRoute.h"
 #include "RmlKit/UI/Backend/SourceFileInterface.h"
 #include "RmlKit/UI/Backend/Window.h"
+#include "RmlKit/UI/Controls/ColorPickerElement.h"
 #include "RmlKit/UI/Controls/RenameInput.h"
 #include "RmlKit/UI/Controls/SpinnerElement.h"
 #include "RmlKit/UI/Controls/SplitterElement.h"
@@ -29,7 +30,6 @@ public:
     RmlRuntime(const RmlRuntime&) = delete;
     RmlRuntime& operator=(const RmlRuntime&) = delete;
 
-    TextInputMethodEditor_SDL& getTextInput() { return textInput; }
 #if RMLKIT_VIDEO
     VideoStore& getVideos() { return videos; }
 #endif
@@ -42,11 +42,11 @@ private:
 #else
     SourceFileInterface files;
 #endif
-    TextInputMethodEditor_SDL textInput;
     FontEngineInterfaceHarfBuzz fonts;
     Rml::ElementInstancerGeneric<VirtualGridElement> virtualGrid;
     Rml::ElementInstancerGeneric<SpinnerElement> spinner;
     Rml::ElementInstancerGeneric<SplitterElement> splitter;
+    Rml::ElementInstancerGeneric<ColorPickerElement> colorPicker;
     Rml::ElementInstancerGeneric<RenameInput> renameInput;
     TextureLoadingDecoratorInstancer textureLoading;
 #if RMLKIT_VIDEO

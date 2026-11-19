@@ -6,37 +6,54 @@
 #include <RmlUi/Core/ComputedValues.h>
 #include <RmlUi/Core/Context.h>
 #include <RmlUi/Core/Element.h>
+#include <RmlUi/Core/ElementDocument.h>
 #include <SDL3/SDL.h>
 
+#include "RmlKit/UI/Backend/Fatal.h"
 #include "RmlKit/UI/Models/Model.h"
 
 namespace RmlKit::UI {
 
 namespace {
 
-bool isEmptyLayoutBox(const Rml::Element& element) {
-    const Rml::String& tag = element.GetTagName();
-    if (tag != "div" && tag != "section" && tag != "header" && tag != "main" && tag != "footer")
-        return false;
-
+bool drawsBackground(const Rml::Element& element) {
     const Rml::ComputedValues& style = element.GetComputedValues();
-    if (style.background_color().alpha != 0 || style.has_decorator() || style.border_top_width() != 0 || style.border_right_width() != 0
-        || style.border_bottom_width() != 0 || style.border_left_width() != 0)
-        return false;
+    return style.background_color().alpha != 0 || style.has_decorator() || style.border_top_width() != 0 || style.border_right_width() != 0
+           || style.border_bottom_width() != 0 || style.border_left_width() != 0;
+}
+
+bool hasEvent(const Rml::Element& element) {
     for (const auto& [name, value] : element.GetAttributes())
         if (name.starts_with("data-event-"))
-            return false;
-    return true;
+            return true;
+    return false;
+}
+
+bool isTransparent(const Rml::Element& element) {
+    return !drawsBackground(element) && !hasEvent(element);
+}
+
+bool isControl(const Rml::Element& element) {
+    const Rml::String& tag = element.GetTagName();
+    return tag == "button" || tag == "input" || tag == "select" || tag == "textarea" || hasEvent(element);
+}
+
+bool isEmptyLayoutBox(const Rml::Element& element) {
+    const Rml::String& tag = element.GetTagName();
+    const bool layout = tag == "div" || tag == "section" || tag == "header" || tag == "main" || tag == "footer" || tag == "nav" || tag == "aside";
+    return layout && isTransparent(element);
 }
 
 }
 
 WindowChrome::WindowChrome(Rml::Context& context, Model& model, SDL_Window* window, std::move_only_function<void()> close)
-    : context(context), window(window), close(std::move(close)), wayland(std::string_view(SDL_GetCurrentVideoDriver()) == "wayland") {
-    model.bindEvent("closeWindow", &WindowChrome::closeWindow, this);
-    model.bindEvent("minimizeWindow", &WindowChrome::minimizeWindow, this);
-    model.bindEvent("toggleMaximized", &WindowChrome::toggleMaximized, this);
+    : context(context), model(model), window(window), close(std::move(close)), wayland(std::string_view(SDL_GetCurrentVideoDriver()) == "wayland") {
+    model.bindWindowEvent("closeWindow", &WindowChrome::closeWindow, this);
+    model.bindWindowEvent("minimizeWindow", &WindowChrome::minimizeWindow, this);
+    model.bindWindowEvent("toggleMaximized", &WindowChrome::toggleMaximized, this);
+    model.bindWindowEvent("windowButton", &WindowChrome::pressWindowButton, this);
     attach();
+    showMaximized();
 }
 
 WindowChrome::~WindowChrome() {
@@ -47,14 +64,48 @@ void WindowChrome::closeWindow(Rml::DataModelHandle, Rml::Event&, const Rml::Var
     close();
 }
 
+void WindowChrome::pressWindowButton(Rml::DataModelHandle handle, Rml::Event& event, const Rml::VariantList& arguments) {
+    const Rml::String button = arguments.size() == 1 ? arguments[0].Get<Rml::String>() : Rml::String();
+    if (button == "close")
+        closeWindow(handle, event, {});
+    else if (button == "minimize")
+        minimizeWindow(handle, event, {});
+    else if (button == "maximize")
+        toggleMaximized(handle, event, {});
+    else
+        fatal("windowButton takes minimize, maximize or close");
+}
+
 void WindowChrome::minimizeWindow(Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
     SDL_MinimizeWindow(window);
 }
 
+void WindowChrome::showMaximized() {
+    const bool maximized = SDL_GetWindowFlags(window) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN);
+    if (model.windowMaximized == maximized)
+        return;
+    model.windowMaximized = maximized;
+    model.dirty("windowMaximized");
+}
+
 void WindowChrome::handle(const SDL_Event& event) {
+    switch (event.type) {
+    case SDL_EVENT_WINDOW_MAXIMIZED:
+    case SDL_EVENT_WINDOW_RESTORED:
+    case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
+    case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
+        return showMaximized();
+    case SDL_EVENT_WINDOW_FOCUS_GAINED:
+    case SDL_EVENT_WINDOW_FOCUS_LOST:
+        model.windowFocused = event.type == SDL_EVENT_WINDOW_FOCUS_GAINED;
+        model.dirty("windowFocused");
+        return;
+    default:
+        break;
+    }
     if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
         const SDL_MouseButtonEvent& button = event.button;
-        if (button.button == SDL_BUTTON_LEFT && button.clicks == 2 && isDragRegion(button.x, button.y))
+        if (button.button == SDL_BUTTON_LEFT && button.clicks == 2 && regionAt(button.x, button.y) == Region::TitleBar)
             toggleMaximized();
         return;
     }
@@ -67,7 +118,7 @@ void WindowChrome::handle(const SDL_Event& event) {
         toggleMaximized();
         return;
     }
-    if (event.type != SDL_EVENT_WINDOW_MOUSE_LEAVE || lastHitTest != SDL_HITTEST_DRAGGABLE)
+    if (event.type != SDL_EVENT_WINDOW_MOUSE_LEAVE || lastHitTest != SDL_HITTEST_DRAGGABLE || !lastHitTitleBar)
         return;
     constexpr Uint64 doubleClickMs = 500;
     const Uint64 now = SDL_GetTicks();
@@ -98,6 +149,7 @@ void WindowChrome::toggleMaximized() {
 SDL_HitTestResult SDLCALL WindowChrome::hitTest(SDL_Window*, const SDL_Point* area, void* chrome) {
     WindowChrome& self = *static_cast<WindowChrome*>(chrome);
     self.lastHitTest = self.hitTestAt(*area);
+    self.lastHitTitleBar = self.lastHitTest == SDL_HITTEST_DRAGGABLE && self.regionAt(static_cast<float>(area->x), static_cast<float>(area->y)) == Region::TitleBar;
     return self.lastHitTest;
 }
 
@@ -133,26 +185,32 @@ SDL_HitTestResult WindowChrome::hitTestAt(const SDL_Point area) const {
     if (left)
         return SDL_HITTEST_RESIZE_LEFT;
 
-    return isDragRegion(static_cast<float>(area.x), static_cast<float>(area.y)) ? SDL_HITTEST_DRAGGABLE : SDL_HITTEST_NORMAL;
+    return regionAt(static_cast<float>(area.x), static_cast<float>(area.y)) != Region::None ? SDL_HITTEST_DRAGGABLE : SDL_HITTEST_NORMAL;
 }
 
-bool WindowChrome::isDragRegion(const float x, const float y) const {
-    //! RmlUi's hit test skips transparent layout boxes, so empty space reaches the drag region.
+//! The hit test looks through transparent layout boxes and overlay documents, so a press on the window background drags the window; only a .window-drag-region is the title bar, where a double click maximizes.
+WindowChrome::Region WindowChrome::regionAt(const float x, const float y) const {
     const float density = SDL_GetWindowPixelDensity(window);
     const Rml::Vector2f point{x * density, y * density};
     Rml::Element* ignored = nullptr;
     for (int depth = 0; depth < 16; ++depth) {
         Rml::Element* hit = context.GetElementAtPoint(point, ignored);
         if (!hit)
-            return false;
-        for (Rml::Element* element = hit; element; element = element->GetParentNode())
+            return Region::None;
+        for (Rml::Element* element = hit; element; element = element->GetParentNode()) {
+            if (isControl(*element))
+                return Region::None;
             if (element->IsClassSet("window-drag-region"))
-                return true;
-        if (!isEmptyLayoutBox(*hit))
-            return false;
+                return Region::TitleBar;
+        }
+        const bool document = hit == static_cast<Rml::Element*>(hit->GetOwnerDocument());
+        if (document && drawsBackground(*hit))
+            return Region::Background;
+        if (!document && !isEmptyLayoutBox(*hit))
+            return Region::None;
         ignored = hit;
     }
-    return false;
+    return Region::None;
 }
 
 }

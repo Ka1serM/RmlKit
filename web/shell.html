@@ -109,7 +109,6 @@ document.addEventListener('keydown', event => {
 document.addEventListener('paste', event => {
     if (document.activeElement !== Module.canvas) return;
     const text = event.clipboardData.getData('text/plain');
-    if (!text) return;
     event.preventDefault();
     Module.ccall('rmlkit_paste', null, ['string'], [text]);
 }, true);

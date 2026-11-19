@@ -26,14 +26,15 @@ constexpr const char* platformName() {
 
 Application::Application() : model(getModel()) {
     demo.platform = platformName();
-    auto& constructor = model.getConstructor();
-    auto fields = constructor.RegisterStruct<Demo>();
-    fields.RegisterMember("count", &Demo::count);
-    fields.RegisterMember("name", &Demo::name);
-    fields.RegisterMember("working", &Demo::working);
-    fields.RegisterMember("percent", &Demo::percent);
-    fields.RegisterMember("platform", &Demo::platform);
-    constructor.Bind("demo", &demo);
+    model.bindData([this](Rml::DataModelConstructor& constructor) {
+        auto fields = constructor.RegisterStruct<Demo>();
+        fields.RegisterMember("count", &Demo::count);
+        fields.RegisterMember("name", &Demo::name);
+        fields.RegisterMember("working", &Demo::working);
+        fields.RegisterMember("percent", &Demo::percent);
+        fields.RegisterMember("platform", &Demo::platform);
+        constructor.Bind("demo", &demo);
+    });
 
     model.bindEvent("demoAdd", &Application::onAdd, this);
     model.bindEvent("demoGreet", &Application::onGreet, this);

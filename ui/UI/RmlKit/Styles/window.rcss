@@ -3,6 +3,11 @@ body {
     height: 100%;
     display: flex;
     flex-direction: column;
+    border-radius: 10dp;
+}
+
+body.window-maximized {
+    border-radius: 0;
 }
 
 img, svg {
@@ -74,6 +79,14 @@ scrollbarvertical sliderbar {
     justify-content: center;
     width: 46dp;
     height: 36dp;
+}
+
+.window-buttons.windows .title-button.close {
+    border-top-right-radius: 10dp;
+}
+
+body.window-maximized .window-buttons.windows .title-button.close {
+    border-top-right-radius: 0;
 }
 
 .app-body {

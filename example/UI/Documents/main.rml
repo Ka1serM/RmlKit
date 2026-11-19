@@ -4,13 +4,18 @@
     <link type="text/rcss" href="../RmlKit/Styles/base.rcss"/>
     <link type="text/rcss" href="../RmlKit/Styles/components.rcss"/>
     <link type="text/rcss" href="../RmlKit/Styles/window.rcss"/>
+    <link type="text/rcss" href="../RmlKit/Styles/window-buttons.rcss"/>
     <link type="text/rcss" href="../Styles/theme.rcss"/>
     <link type="text/rcss" href="../Styles/example.rcss"/>
+    <link type="text/rcss" href="../Platform/WindowButtons/style.rcss"/>
 </head>
 <!--! The router opens this document with the data model "app" and shows the views of UI/Views inside #views. -->
 <body id="main" data-model="app">
     <header class="title-bar">
         <div class="window-drag-region"></div>
+        <div class="window-buttons start" data-if="windowButtons &amp;&amp; windowButtonsStart.size &gt; 0" data-class-windows="windowButtonStyle == 'windows'" data-class-gnome="windowButtonStyle == 'gnome'" data-class-kde="windowButtonStyle == 'kde'" data-class-macos="windowButtonStyle == 'macos'" data-class-gtk="windowButtonStyle == 'gtk'" data-class-backdrop="!windowFocused" data-class-maximized="windowMaximized">
+            <button class="title-button" data-for="button : windowButtonsStart" data-class-close="button == 'close'" data-class-minimize="button == 'minimize'" data-class-maximize="button == 'maximize'" data-event-click="windowButton(button)"><svg data-attr-src="'/UI/RmlKit/Icons/window-' + (windowButtonStyle == 'gtk' ? 'gnome' : windowButtonStyle) + '-' + (button == 'maximize' &amp;&amp; windowMaximized ? 'restore' : button) + '.svg'"/></button>
+        </div>
         <div class="title-left">
             <svg class="wordmark example-mark" src="../../assets/icon.svg"/>
             <span class="title-card">{{ productName }}</span>
@@ -20,9 +25,9 @@
             </div>
         </div>
         <div class="title-right">
-            <button data-if="windowButtons" class="title-button window-button" data-event-click="minimizeWindow()"><svg class="icon-14 icon-primary" src="../../assets/icons/icon-minus.svg"/></button>
-            <button data-if="windowButtons" class="title-button window-button" data-event-click="toggleMaximized()"><svg class="icon-14 icon-primary" src="../../assets/icons/icon-square.svg"/></button>
-            <button data-if="windowButtons" class="title-button window-button close" data-event-click="closeWindow()"><svg class="icon-14 icon-primary" src="../../assets/icons/icon-x.svg"/></button>
+            <div class="window-buttons end" data-if="windowButtons &amp;&amp; windowButtonsEnd.size &gt; 0" data-class-windows="windowButtonStyle == 'windows'" data-class-gnome="windowButtonStyle == 'gnome'" data-class-kde="windowButtonStyle == 'kde'" data-class-macos="windowButtonStyle == 'macos'" data-class-gtk="windowButtonStyle == 'gtk'" data-class-backdrop="!windowFocused" data-class-maximized="windowMaximized">
+                <button class="title-button" data-for="button : windowButtonsEnd" data-class-close="button == 'close'" data-class-minimize="button == 'minimize'" data-class-maximize="button == 'maximize'" data-event-click="windowButton(button)"><svg data-attr-src="'/UI/RmlKit/Icons/window-' + (windowButtonStyle == 'gtk' ? 'gnome' : windowButtonStyle) + '-' + (button == 'maximize' &amp;&amp; windowMaximized ? 'restore' : button) + '.svg'"/></button>
+            </div>
         </div>
     </header>
 

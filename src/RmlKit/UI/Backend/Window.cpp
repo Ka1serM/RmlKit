@@ -33,26 +33,45 @@ std::filesystem::path pipelineDirectory() {
 
 }
 
-Window::Window(const char* title, const int width, const int height)
-    : window(create(title, width, height)), device(openDevice()), swapchain(openSwapchain()), renderer(device, swapchain.getFormat()) {}
+void ContextRemover::operator()(Rml::Context* context) const noexcept {
+    Rml::RemoveContext(context->GetName());
+    //! RmlUi keeps a render manager for each render interface, and it must let go of a window's renderer before the renderer goes.
+    Rml::ReleaseRenderManagers();
+}
+
+Window::Window(NoorRHI::Device& device, const WindowOptions& options)
+    : window(create(options)), device(device), swapchain(openSwapchain()), renderer(device, swapchain.getFormat()) {}
 
 Window::~Window() {
     if (auto idle = device.waitIdle(); !idle)
         fatal(std::format("The GPU did not finish its work: {}", idle.error().message));
 }
 
-NoorRHI::Device Window::openDevice() {
-    NoorRHI::Device opened;
-    if (auto result = opened.open({.applicationName = PRODUCT_NAME, .presentation = this, .pipelineDirectory = pipelineDirectory()}); !result)
+void Window::openDevice() {
+    if (auto result = device.open({.applicationName = PRODUCT_NAME, .presentation = this, .pipelineDirectory = pipelineDirectory()}); !result)
         fatal(std::format("The GPU device cannot open: {}", result.error().message));
-    return opened;
 }
 
 NoorRHI::Swapchain Window::openSwapchain() {
+    if (!device)
+        openDevice();
     NoorRHI::Swapchain opened;
-    if (auto result = opened.open(device, *this, {.presentMode = NoorRHI::PresentMode::Vsync, .maxFramesInFlight = 2}); !result)
+    const NoorRHI::SwapchainDesc desc{.presentMode = NoorRHI::PresentMode::Vsync, .maxFramesInFlight = 2, .transparent = transparent};
+    if (auto result = opened.open(device, *this, desc); !result)
         fatal(std::format("The swapchain cannot open: {}", result.error().message));
     return opened;
+}
+
+ContextPointer Window::openContext(const Rml::String& name, Rml::TextInputHandler& textInput) {
+    ContextPointer context(Rml::CreateContext(name, pixelSize(), &renderer, &textInput));
+    if (!context)
+        fatal(std::format("RmlUi cannot create the context {}", name));
+    context->SetDensityIndependentPixelRatio(SDL_GetWindowDisplayScale(window.get()));
+    return context;
+}
+
+bool Window::maximized() const {
+    return SDL_GetWindowFlags(window.get()) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN);
 }
 
 bool Window::drawable() const {
@@ -70,10 +89,6 @@ Rml::Vector2i Window::pixelSize() const {
     return size;
 }
 
-void Window::prepare(Rml::Context& context) {
-    context.SetDimensions(pixelSize());
-}
-
 NoorRHI::Frame Window::acquire() {
     constexpr int attempts = 4;
     for (int attempt = 0; attempt < attempts; ++attempt) {
@@ -86,11 +101,14 @@ NoorRHI::Frame Window::acquire() {
     fatal("The swapchain gives no frame after a rebuild.");
 }
 
-void Window::render(Rml::Context& context) {
+void Window::render(const std::span<const Layer> layers) {
     NoorRHI::Frame frame = acquire();
     const NoorRHI::Image& image = frame.getImage();
     renderer.beginFrame({static_cast<int>(image.getWidth()), static_cast<int>(image.getHeight())});
-    context.Render();
+    for (const Layer& layer : layers) {
+        renderer.setOrigin(layer.origin);
+        layer.context.Render();
+    }
     if (auto submitted = device.submit(renderer.endFrame(image)); !submitted)
         fatal(std::format("The GPU cannot run the frame: {}", submitted.error().message));
     if (auto presented = swapchain.present(std::move(frame)); !presented)

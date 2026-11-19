@@ -11,19 +11,23 @@
 namespace RmlKit::UI {
 
 //! Window coordinates are pixels on X11 and Windows, and points on Wayland and macOS.
-SDL_Window* Window::create(const char* title, const int width, const int height) {
+SDL_Window* Window::create(const WindowOptions& options) {
     const SDL_DisplayID display = SDL_GetPrimaryDisplay();
     const float scale = SDL_GetDisplayContentScale(display);
     SDL_Rect usable;
     if (!SDL_GetDisplayUsableBounds(display, &usable))
         fatal(std::format("SDL_GetDisplayUsableBounds failed: {}", SDL_GetError()));
-    const int windowWidth = std::min(static_cast<int>(width * scale), usable.w);
-    const int windowHeight = std::min(static_cast<int>(height * scale), usable.h);
-    SDL_Window* window =
-        SDL_CreateWindow(title, windowWidth, windowHeight, SDL_WINDOW_VULKAN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    const int windowWidth = std::min(static_cast<int>(options.width * scale), usable.w);
+    const int windowHeight = std::min(static_cast<int>(options.height * scale), usable.h);
+    SDL_WindowFlags flags = SDL_WINDOW_VULKAN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+    if (transparent)
+        flags |= SDL_WINDOW_TRANSPARENT;
+    SDL_Window* window = SDL_CreateWindow(options.title.c_str(), windowWidth, windowHeight, flags);
     if (!window)
         fatal(std::format("SDL_CreateWindow failed: {}", SDL_GetError()));
-    SDL_SetWindowMinimumSize(window, static_cast<int>(360 * scale), static_cast<int>(480 * scale));
+    if (options.parent && !SDL_SetWindowParent(window, options.parent))
+        fatal(std::format("SDL_SetWindowParent failed: {}", SDL_GetError()));
+    SDL_SetWindowMinimumSize(window, static_cast<int>(options.minimumWidth * scale), static_cast<int>(options.minimumHeight * scale));
     return window;
 }
 

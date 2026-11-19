@@ -53,6 +53,20 @@ void LogSystemInterface::SetMouseCursor(const Rml::String& cursorName) {
     SystemInterface_SDL::SetMouseCursor(cursorName);
 }
 
+void LogSystemInterface::ActivateKeyboard(const Rml::Vector2f caretPosition, const float lineHeight) {
+    SDL_Window* focused = SDL_GetKeyboardFocus();
+    if (!focused)
+        return;
+    const SDL_Rect area{static_cast<int>(caretPosition.x), static_cast<int>(caretPosition.y), 1, static_cast<int>(lineHeight)};
+    SDL_SetTextInputArea(focused, &area, 0);
+    SDL_StartTextInput(focused);
+}
+
+void LogSystemInterface::DeactivateKeyboard() {
+    if (SDL_Window* focused = SDL_GetKeyboardFocus())
+        SDL_StopTextInput(focused);
+}
+
 bool LogSystemInterface::LogMessage(const Rml::Log::Type type, const Rml::String& message) {
     if (!model)
         return SystemInterface_SDL::LogMessage(type, message);

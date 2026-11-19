@@ -1,0 +1,51 @@
+/*! Title bar buttons in the style of the platform: .window-buttons gets windows, gnome, kde, macos or gtk from windowButtonStyle; /UI/Platform/WindowButtons/style.rcss styles gtk with the images GTK drew. */
+
+.window-buttons { flex: 0 0 auto; display: flex; align-items: center; }
+
+.window-buttons .title-button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
+
+.window-buttons.windows { align-self: stretch; gap: 0; }
+
+.window-buttons.windows .title-button { width: 46dp; height: 100%; }
+
+.window-buttons.windows .title-button svg { width: 16dp; height: 16dp; image-color: #ffffffb3; }
+
+.window-buttons.windows .title-button:hover { background-color: #ffffff14; }
+
+.window-buttons.windows .title-button:hover svg { image-color: #ffffff; }
+
+.window-buttons.windows .title-button.close:hover { background-color: #c42b1c; }
+
+.window-buttons.gnome { gap: 12dp; padding: 0 12dp; }
+
+.window-buttons.gnome .title-button { width: 24dp; height: 24dp; border-radius: 12dp; background-color: #ffffff1a; }
+
+.window-buttons.gnome .title-button:hover { background-color: #ffffff26; }
+
+.window-buttons.gnome .title-button:active { background-color: #ffffff40; }
+
+.window-buttons.gnome .title-button svg { width: 16dp; height: 16dp; image-color: #ffffffde; }
+
+.window-buttons.kde { gap: 6dp; padding: 0 10dp; }
+
+.window-buttons.kde .title-button { width: 20dp; height: 20dp; border-radius: 10dp; }
+
+.window-buttons.kde .title-button svg { width: 16dp; height: 16dp; image-color: #fcfcfc; }
+
+.window-buttons.kde .title-button:hover { background-color: #ffffff26; }
+
+.window-buttons.kde .title-button.close:hover { background-color: #da4453; }
+
+.window-buttons.macos { gap: 8dp; padding: 0 14dp; }
+
+.window-buttons.macos .title-button { width: 12dp; height: 12dp; border-radius: 6dp; }
+
+.window-buttons.macos .title-button.close { background-color: #ff5f57; }
+
+.window-buttons.macos .title-button.minimize { background-color: #febc2e; }
+
+.window-buttons.macos .title-button.maximize { background-color: #28c840; }
+
+.window-buttons.macos .title-button svg { width: 8dp; height: 8dp; image-color: #0000008c; opacity: 0; }
+
+.window-buttons.macos:hover .title-button svg { opacity: 1; }

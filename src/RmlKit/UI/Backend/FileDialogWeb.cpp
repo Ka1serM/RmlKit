@@ -1,6 +1,7 @@
 #include "RmlKit/UI/Backend/FileDialog.h"
 
 #include <filesystem>
+#include <string>
 #include <utility>
 
 #include <RmlUi/Core/Log.h>
@@ -36,7 +37,10 @@ void FileDialog::openFolder(SDL_Window*, const FolderKind kind, const std::files
 
 void FileDialog::openFile(SDL_Window*, const std::span<const FileFilter> filters, const std::filesystem::path&, Chosen onChosen) {
     begin(std::move(onChosen), true);
-    rmlkit_choose("files", filters.empty() ? "" : filters.front().extension);
+    std::string extensions;
+    for (const FileFilter& filter : filters)
+        extensions.append(extensions.empty() ? "" : ";").append(filter.extension);
+    rmlkit_choose("files", extensions.c_str());
 }
 
 }

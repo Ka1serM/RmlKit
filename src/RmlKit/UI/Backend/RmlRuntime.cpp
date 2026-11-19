@@ -20,13 +20,13 @@ RmlRuntime::RmlRuntime(Window& window)
     Rml::SetSystemInterface(&system);
     Rml::SetRenderInterface(&window.getRenderer());
     Rml::SetFileInterface(&files);
-    Rml::SetTextInputHandler(&textInput);
     Rml::SetFontEngineInterface(&fonts);
     if (!Rml::Initialise())
         fatal("RmlUi failed to initialize");
     Rml::Factory::RegisterElementInstancer("virtual-grid", &virtualGrid);
     Rml::Factory::RegisterElementInstancer("spinner", &spinner);
     Rml::Factory::RegisterElementInstancer("splitter", &splitter);
+    Rml::Factory::RegisterElementInstancer("color-picker", &colorPicker);
     Rml::Factory::RegisterElementInstancer("rename-input", &renameInput);
     Rml::Factory::RegisterDecoratorInstancer("texture-loading", &textureLoading);
 #if RMLKIT_VIDEO

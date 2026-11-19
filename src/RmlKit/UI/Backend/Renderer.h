@@ -49,6 +49,8 @@ public:
     const NoorRHI::Image& getTexture(Rml::TextureHandle handle) const { return textures.get(handle).image; }
 
     void beginFrame(Rml::Vector2i size);
+    //! The contexts that render next draw with their top left corner at origin, in pixels of the frame.
+    void setOrigin(Rml::Vector2i origin);
     NoorRHI::CommandList endFrame(const NoorRHI::Image& target);
 
     void setExternalTextureReader(std::string_view prefix, ExternalTextureReader* reader);
@@ -189,7 +191,8 @@ private:
     void applyScissor();
     void setScissor(std::optional<Rml::Rectanglei> region);
     void setStencilReference(std::uint32_t reference);
-    void resolve(Rml::LayerHandle layer);
+    void resolve(Rml::LayerHandle layer, Rml::Rectanglei area);
+    const NoorRHI::Image& acquireLayer();
     void swapPostprocess();
     Program clipped(Program unclipped) const;
     Rml::Rectanglei getScissorOrViewport() const;
@@ -218,6 +221,7 @@ private:
     Slots<Gradient> gradients;
 
     Rml::Vector2i viewport;
+    Rml::Vector2i origin;
     std::vector<NoorRHI::Image> layers;
     std::size_t layerCount = 0;
     NoorRHI::Image stencil;
