@@ -7,11 +7,9 @@
 
 #include <RmlUi/Core/Context.h>
 #include <RmlUi/Core/ElementDocument.h>
-#include <RmlUi/Core/Elements/ElementFormControlInput.h>
 #include <RmlUi/Core/Factory.h>
 #include <RmlUi/Core/FileInterface.h>
 #include <RmlUi/Core/ID.h>
-#include <RmlUi/Core/Input.h>
 #include <RmlUi/Core/Property.h>
 #include <RmlUi/Core/StyleTypes.h>
 
@@ -52,24 +50,6 @@ void setHidden(Rml::Element& view, const bool hidden) {
 
 Router::Router(Rml::Context& context, Model& model) : context(context), model(model), url(*this) {
     model.bindEvent("showView", &Router::onShowView, this);
-    context.AddEventListener("keydown", this);
-}
-
-Router::~Router() {
-    context.RemoveEventListener("keydown", this);
-}
-
-void Router::ProcessEvent(Rml::Event& event) {
-    if (event.GetParameter<int>("key_identifier", Rml::Input::KI_UNKNOWN) != Rml::Input::KI_F)
-        return;
-    if (!event.GetParameter<int>("ctrl_key", 0) || !shown)
-        return;
-    auto* field = rmlui_dynamic_cast<Rml::ElementFormControlInput*>(shown->QuerySelector(".input.search input"));
-    if (!field)
-        return;
-    field->Focus(true);
-    field->Select();
-    event.StopPropagation();
 }
 
 Rml::Element& Router::loadView(const Rml::String& name) {

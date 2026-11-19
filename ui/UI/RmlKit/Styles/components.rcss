@@ -841,3 +841,13 @@ splitter { display: block; flex: 0 0 auto; drag: drag; }
 splitter.vertical { width: 6dp; margin: 0 -2dp; cursor: ew-resize; }
 
 splitter.horizontal { height: 6dp; margin: -2dp 0; cursor: ns-resize; }
+
+/*! The menu of a text field (TextMenu.cpp), which RmlKit adds to the document of the field. */
+.text-menu {
+    position: absolute;
+    z-index: 10000;
+    min-width: 200dp;
+    box-sizing: border-box;
+}
+
+.text-menu .kbd { margin-left: auto; }

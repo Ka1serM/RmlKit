@@ -8,6 +8,7 @@
 #include <SDL3/SDL_events.h>
 
 #include "RmlKit/UI/Backend/Hotkeys.h"
+#include "RmlKit/UI/Backend/TextMenu.h"
 #include "RmlKit/UI/Backend/Tooltip.h"
 #include "RmlKit/UI/Backend/Window.h"
 #include "RmlKit/UI/Backend/WindowChrome.h"
@@ -48,6 +49,7 @@ private:
     WindowChrome chrome;
     Tooltip tooltip;
     Hotkeys hotkeys;
+    TextMenu textMenu;
     std::move_only_function<void()> close;
     Uint64 lastUpdateNs = 0;
     std::optional<Rml::Vector2i> overlaySize;

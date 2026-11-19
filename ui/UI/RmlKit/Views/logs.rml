@@ -30,7 +30,6 @@
                         <div class="input search">
                             <svg class="icon-14 icon-muted" src="/UI/RmlKit/Icons/icon-search.svg"/>
                             <input class="input-field" type="text" placeholder="Filter messages…" data-value="logs.search" data-event-change="logsSearch()"/>
-                            <span class="kbd">Ctrl F</span>
                         </div>
                         <div class="segment small levels">
                             <button class="segment-item" data-class-on="logs.levelFilter == ''" data-event-click="logsLevel('')"><span>All</span> <span class="segment-count">{{ logLines.size }}</span></button>

@@ -5,7 +5,6 @@
 
 #include <RmlUi/Core/DataModelHandle.h>
 #include <RmlUi/Core/Event.h>
-#include <RmlUi/Core/EventListener.h>
 #include <RmlUi/Core/Types.h>
 
 #include "RmlKit/UI/Backend/ViewUrl.h"
@@ -20,14 +19,11 @@ namespace RmlKit::UI {
 
 class Model;
 
-class Router final : public Rml::EventListener {
+class Router final {
 public:
     Router(Rml::Context& context, Model& model);
     Router(const Router&) = delete;
     Router& operator=(const Router&) = delete;
-    ~Router() override;
-
-    void ProcessEvent(Rml::Event& event) override;
 
     void open();
     void show(const Rml::String& name);

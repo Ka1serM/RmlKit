@@ -21,6 +21,15 @@ addToLibrary({
         Module.rmlkitCopy(UTF8ToString(text));
     },
 
+    //! A paste from the text menu has no browser paste event, so it asks for the clipboard, which the browser may confirm.
+    rmlkit_read_paste__sig: 'v',
+    rmlkit_read_paste: () => {
+        if (!navigator.clipboard || !navigator.clipboard.readText) return;
+        navigator.clipboard.readText()
+            .then(text => Module.ccall('rmlkit_paste', null, ['string'], [text]))
+            .catch(() => {});
+    },
+
     rmlkit_hide_link_drag__sig: 'v',
     rmlkit_hide_link_drag: () => {
         Module.rmlkitHideLinkDrag();

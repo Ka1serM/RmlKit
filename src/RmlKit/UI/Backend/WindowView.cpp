@@ -29,7 +29,7 @@ bool changesValues(const SDL_Event& event) {
 
 WindowView::WindowView(Window& window, const Rml::String& name, std::move_only_function<void()> close)
     : window(window), context(window.openContext(name, textInput)), model(*context), chrome(*context, model, window.getNative(), [this] { this->close(); }),
-      tooltip(*context), hotkeys(*context), close(std::move(close)) {}
+      tooltip(*context), hotkeys(*context), textMenu(*context), close(std::move(close)) {}
 
 double WindowView::nextFrameDelay() const {
     if (!window.drawable())

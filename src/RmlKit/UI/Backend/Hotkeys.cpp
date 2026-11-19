@@ -12,6 +12,7 @@
 #include <RmlUi/Core/Event.h>
 
 #include "RmlKit/UI/Backend/Fatal.h"
+#include "RmlKit/UI/Backend/TextMenu.h"
 
 namespace RmlKit::UI {
 
@@ -95,7 +96,8 @@ bool textFieldKeeps(const Hotkey& pressed) {
     if (!(pressed.modifiers & command))
         return true;
     constexpr std::array editing{Input::KI_A, Input::KI_C, Input::KI_V, Input::KI_X, Input::KI_Z, Input::KI_Y, Input::KI_LEFT, Input::KI_RIGHT, Input::KI_BACK, Input::KI_DELETE};
-    return (pressed.modifiers & ~Input::KM_SHIFT) == modKey && std::ranges::contains(editing, pressed.key);
+    const int modifiers = pressed.modifiers & ~Input::KM_SHIFT;
+    return (modifiers == modKey || modifiers == Input::KM_CTRL) && std::ranges::contains(editing, pressed.key);
 }
 
 }
@@ -176,8 +178,14 @@ void Hotkeys::ProcessEvent(Rml::Event& event) {
     const Hotkey pressed = pressedOf(event);
     if (pressed.key == Input::KI_UNKNOWN)
         return;
-    if (isTextField(event.GetTargetElement()) && textFieldKeeps(pressed))
+    if (isTextField(event.GetTargetElement()) && textFieldKeeps(pressed)) {
+        //! RmlUi edits text with Ctrl only, so Cmd on macOS sends the same key with Ctrl.
+        if (modKey != Input::KM_CTRL && (pressed.modifiers & modKey) && pressed.key != Input::KI_LEFT && pressed.key != Input::KI_RIGHT) {
+            event.StopPropagation();
+            sendEditKey(*event.GetTargetElement(), static_cast<KeyIdentifier>(pressed.key));
+        }
         return;
+    }
     if (clickElement(pressed)) {
         event.StopPropagation();
         return;
