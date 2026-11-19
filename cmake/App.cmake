@@ -29,7 +29,7 @@ function(rmlkit_add_app target)
     target_sources(${target} PRIVATE "${RMLKIT_DIR}/src/RmlKit/UI/Main.cpp")
     target_compile_definitions(${target} PRIVATE "RMLKIT_APPLICATION_CLASS=${APP_APPLICATION}"
         "RMLKIT_APPLICATION_HEADER=\"${APP_APPLICATION_HEADER}\"")
-    file(GLOB_RECURSE ui_files CONFIGURE_DEPENDS "${APP_UI_DIR}/UI/*.rml" "${APP_UI_DIR}/UI/*.rcss")
+    file(GLOB_RECURSE ui_files CONFIGURE_DEPENDS "${APP_UI_DIR}/UI/*.rml" "${APP_UI_DIR}/UI/*.rcss" "${APP_UI_DIR}/UI/Fonts/*.ttf")
     set(resources ROOT "${APP_UI_DIR}" ${ui_files})
     if(APP_ASSET_DIR)
         file(GLOB_RECURSE asset_files CONFIGURE_DEPENDS "${APP_ASSET_DIR}/assets/*")

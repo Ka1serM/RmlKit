@@ -84,6 +84,7 @@ private:
     void scheduleWake(double seconds);
     void draw();
     void update();
+    void applyColorScheme();
     void refreshArrivedTextures();
 
     Sdl sdl;

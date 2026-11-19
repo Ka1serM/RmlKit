@@ -116,7 +116,9 @@ void Router::show(const Rml::String& name) {
         shown->DispatchEvent(Rml::EventId::Hide, {});
     }
     setHidden(view, false);
-    document->SetAttribute("nav", view.GetAttribute<Rml::String>("nav", ""));
+    const Rml::String nav = view.GetAttribute<Rml::String>("nav", "");
+    document->SetAttribute("nav", nav);
+    markNavItems(nav);
     shown = &view;
     visited.insert(name);
     url.show(name);
@@ -132,6 +134,13 @@ void Router::show(const Rml::String& name) {
 
     view.Focus();
     view.DispatchEvent(Rml::EventId::Show, {});
+}
+
+void Router::markNavItems(const Rml::String& nav) {
+    Rml::ElementList items;
+    document->GetElementsByClassName(items, "nav-item");
+    for (Rml::Element* const item : items)
+        item->SetClass("active", item->GetAttribute<Rml::String>("nav", "") == nav);
 }
 
 void Router::showFromUrl(const Rml::String& name) {

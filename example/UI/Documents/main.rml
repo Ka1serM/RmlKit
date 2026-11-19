@@ -1,9 +1,10 @@
 <rml>
 <head>
     <title>Main</title>
-    <link type="text/rcss" href="../RmlKit/Styles/theme.rcss"/>
+    <link type="text/rcss" href="../RmlKit/Styles/base.rcss"/>
     <link type="text/rcss" href="../RmlKit/Styles/components.rcss"/>
     <link type="text/rcss" href="../RmlKit/Styles/window.rcss"/>
+    <link type="text/rcss" href="../Styles/theme.rcss"/>
     <link type="text/rcss" href="../Styles/example.rcss"/>
 </head>
 <!--! The router opens this document with the data model "app" and shows the views of UI/Views inside #views. -->

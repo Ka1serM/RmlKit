@@ -33,10 +33,10 @@ RmlRuntime::RmlRuntime(Window& window)
     Rml::Factory::RegisterElementInstancer("video", &video);
 #endif
 
-    for (const std::string& font : EmbeddedResources::list("UI/RmlKit/Fonts")) {
+    for (const std::string& font : EmbeddedResources::list("UI/Fonts")) {
         if (!font.ends_with(".ttf"))
             continue;
-        const Rml::String path = "UI/RmlKit/Fonts/" + font;
+        const Rml::String path = "UI/Fonts/" + font;
         if (!Rml::LoadFontFace(path))
             fatal(std::format("RmlUi cannot load the font {}", path));
     }

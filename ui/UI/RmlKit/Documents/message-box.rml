@@ -1,9 +1,10 @@
 <rml>
 <head>
     <title>Message box</title>
-    <link type="text/rcss" href="../Styles/theme.rcss"/>
+    <link type="text/rcss" href="../Styles/base.rcss"/>
     <link type="text/rcss" href="../Styles/components.rcss"/>
     <link type="text/rcss" href="../Styles/message-box.rcss"/>
+    <link type="text/rcss" href="../../Styles/theme.rcss"/>
 </head>
 <body id="message-box" class="overlay" data-model="app" data-event-keydown="messageBoxKey()">
     <div class="message-box-scrim"></div>

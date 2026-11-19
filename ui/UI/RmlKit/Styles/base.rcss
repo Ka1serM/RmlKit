@@ -1,0 +1,48 @@
+body, div, header, main, footer, section, p, label, button {
+    display: block;
+}
+
+body {
+    font-size: 13dp;
+}
+
+.title-bar {
+    border-bottom-width: 1dp;
+}
+
+.breadcrumb {
+    font-size: 12dp;
+}
+
+.crumb-detail {
+    margin-left: 4dp;
+    font-size: 11dp;
+}
+
+.display {
+    font-size: 32dp;
+}
+
+.body-secondary {
+    font-size: 13dp;
+}
+
+.caps-bold {
+    font-size: 11dp;
+}
+
+.field-label {
+    font-size: 11dp;
+}
+
+.status-bar {
+    border-top-width: 1dp;
+}
+
+.status-name {
+    font-size: 12dp;
+}
+
+.status-mono, .status-right {
+    font-size: 11dp;
+}

@@ -39,6 +39,7 @@ private:
     void onShowView(Rml::DataModelHandle, Rml::Event&, const Rml::VariantList& arguments);
 
     Rml::Element& loadView(const Rml::String& name);
+    void markNavItems(const Rml::String& nav);
     void close();
 
     Rml::Context& context;

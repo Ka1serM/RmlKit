@@ -36,8 +36,11 @@ public:
 
 The app binds its view models into `getModel()`. The UI has `UI/Documents/main.rml` with the elements `views` and
 `tooltip`, and one `UI/Views/<name>.rml` for each view of the router. RmlKit embeds its own `UI/RmlKit/`: the
-base styles, the message box, and the Google Sans fonts. A document links them first, such as
-`../RmlKit/Styles/theme.rcss`, then the app's styles.
+layout styles, the message box, and the icons. RmlKit has no colours and no fonts: the app owns its look in
+`UI/Styles/theme.rcss`, and its `.ttf` fonts in `UI/Fonts/`, which RmlKit loads at start. A document links the RmlKit
+styles first, such as `../RmlKit/Styles/base.rcss`, then `../Styles/theme.rcss`, then the app's other styles. The
+message box links the app's `theme.rcss` too. RmlKit sets the class `light` on every document while the system uses a
+light theme, so a theme can style `body.light`.
 
 [`example/`](example) is a complete app: a counter, a text field, the message box, the log, and a background job.
 

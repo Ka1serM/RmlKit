@@ -156,9 +156,16 @@ void Application::update() {
     model.takeChanged();
     lastUpdateNs = SDL_GetTicksNS();
     refreshArrivedTextures();
+    applyColorScheme();
     context->Update();
     for (int extra = 0; extra < maxExtraUpdates && model.takeChanged(); ++extra)
         context->Update();
+}
+
+void Application::applyColorScheme() {
+    const bool light = SDL_GetSystemTheme() == SDL_SYSTEM_THEME_LIGHT;
+    for (int i = 0; i < context->GetNumDocuments(); ++i)
+        context->GetDocument(i)->SetClass("light", light);
 }
 
 void Application::refreshArrivedTextures() {
