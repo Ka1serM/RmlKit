@@ -235,6 +235,9 @@ private:
     std::uint32_t stencilReference = 0;
     Rml::Matrix4f projection;
     std::array<NoorRHI::float4, 4> transform{};
+    //! A transform that only translates is kept out of transform, so textured geometry can snap to whole pixels.
+    Rml::Vector2f shift;
+    bool snapped = true;
 
     Rml::String prefix;
     ExternalTextureReader* reader = nullptr;

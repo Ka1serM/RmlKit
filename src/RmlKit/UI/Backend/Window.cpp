@@ -40,21 +40,23 @@ void ContextRemover::operator()(Rml::Context* context) const noexcept {
 }
 
 Window::Window(NoorRHI::Device& device, const WindowOptions& options)
-    : window(create(options)), device(device), swapchain(openSwapchain()), renderer(device, swapchain.getFormat()) {}
+    : window(create(options)), device(device), swapchain(openSwapchain(options.extensions)), renderer(device, swapchain.getFormat()) {}
 
 Window::~Window() {
     if (auto idle = device.waitIdle(); !idle)
         fatal(std::format("The GPU did not finish its work: {}", idle.error().message));
 }
 
-void Window::openDevice() {
-    if (auto result = device.open({.applicationName = PRODUCT_NAME, .presentation = this, .pipelineDirectory = pipelineDirectory()}); !result)
+void Window::openDevice(const NoorRHI::ExtensionProvider* extensions) {
+    if (auto result =
+            device.open({.applicationName = PRODUCT_NAME, .presentation = this, .extensions = extensions, .pipelineDirectory = pipelineDirectory()});
+        !result)
         fatal(std::format("The GPU device cannot open: {}", result.error().message));
 }
 
-NoorRHI::Swapchain Window::openSwapchain() {
+NoorRHI::Swapchain Window::openSwapchain(const NoorRHI::ExtensionProvider* extensions) {
     if (!device)
-        openDevice();
+        openDevice(extensions);
     NoorRHI::Swapchain opened;
     const NoorRHI::SwapchainDesc desc{.presentMode = NoorRHI::PresentMode::Vsync, .maxFramesInFlight = 2, .transparent = transparent};
     if (auto result = opened.open(device, *this, desc); !result)

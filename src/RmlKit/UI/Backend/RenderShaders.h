@@ -38,6 +38,8 @@ struct GeometryArguments {
     uint gradientFunction;
     uint stopCount;
     uint textureMode;
+    //! Nonzero moves the mesh so its first vertex is on a whole pixel, so text and images that land between pixels stay sharp.
+    uint snap;
 };
 
 struct PassArguments {

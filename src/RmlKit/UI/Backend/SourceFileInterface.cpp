@@ -5,6 +5,7 @@
 #include <cstring>
 #include <optional>
 
+#include "RmlKit/UI/Backend/EmbeddedResources.h"
 #include "RmlKit/UI/Backend/WindowButtonLayout.h"
 
 namespace RmlKit::UI {
@@ -31,7 +32,15 @@ Rml::FileHandle SourceFileInterface::Open(const Rml::String& path) {
         memoryFiles.emplace(handle, std::move(memory));
         return handle;
     }
-    return reinterpret_cast<Rml::FileHandle>(std::fopen(sourcePath(path).c_str(), "rb"));
+    if (std::FILE* opened = std::fopen(sourcePath(path).c_str(), "rb"))
+        return reinterpret_cast<Rml::FileHandle>(opened);
+    //! A file outside the source folders, such as the UI of a plugin library, comes from the embedded resources.
+    if (!EmbeddedResources::exists(path))
+        return 0;
+    auto memory = std::make_unique<MemoryFile>(MemoryFile{.data = EmbeddedResources::read(path)});
+    const auto handle = reinterpret_cast<Rml::FileHandle>(memory.get());
+    memoryFiles.emplace(handle, std::move(memory));
+    return handle;
 }
 
 void SourceFileInterface::Close(const Rml::FileHandle handle) {

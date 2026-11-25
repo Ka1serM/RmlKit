@@ -29,7 +29,7 @@ namespace RmlKit::UI {
 
 class Application {
 public:
-    Application();
+    explicit Application(const WindowOptions& options = {});
     virtual ~Application();
     Application(const Application&) = delete;
     Application& operator=(const Application&) = delete;

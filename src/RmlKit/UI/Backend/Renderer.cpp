@@ -291,7 +291,7 @@ void Renderer::draw(const NoorRHI::Image& target, const Program program, const R
 
 RenderShaders::GeometryArguments Renderer::describeGeometry(const Rml::Vector2f translation) const {
     return {.transform = {transform[0], transform[1], transform[2], transform[3]},
-            .translation = {translation.x, translation.y},
+            .translation = {translation.x + shift.x, translation.y + shift.y},
             .sampler = repeatSampler.getHandle()};
 }
 
@@ -327,6 +327,7 @@ void Renderer::RenderGeometry(const Rml::CompiledGeometryHandle geometry, const 
     const Texture& sampled = textures.get(texture);
     arguments.texture = sampled.image.getSampledHandle();
     arguments.textureMode = static_cast<std::uint32_t>(sampled.mode);
+    arguments.snap = snapped ? 1u : 0u;
     drawGeometry(clipped(Program::Texture), geometry, arguments);
 }
 
@@ -475,7 +476,20 @@ void Renderer::RenderToClipMask(const Rml::ClipMaskOperation operation, const Rm
 }
 
 void Renderer::SetTransform(const Rml::Matrix4f* const newTransform) {
-    transform = toRows(newTransform ? projection * *newTransform : projection);
+    shift = {};
+    snapped = true;
+    if (!newTransform) {
+        transform = toRows(projection);
+        return;
+    }
+    const Rml::Vector4f moved = *newTransform * Rml::Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
+    if (*newTransform == Rml::Matrix4f::Translate(moved.x, moved.y, 0.0f)) {
+        shift = {moved.x, moved.y};
+        transform = toRows(projection);
+        return;
+    }
+    snapped = false;
+    transform = toRows(projection * *newTransform);
 }
 
 Rml::LayerHandle Renderer::PushLayer() {

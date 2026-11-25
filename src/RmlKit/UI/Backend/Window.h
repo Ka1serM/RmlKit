@@ -22,6 +22,8 @@ struct WindowOptions {
     int minimumWidth = 360;
     int minimumHeight = 480;
     SDL_Window* parent = nullptr;
+    //! The Vulkan extensions of the device that the first window opens.
+    const NoorRHI::ExtensionProvider* extensions = nullptr;
 };
 
 struct ContextRemover {
@@ -65,8 +67,8 @@ public:
 
 private:
     static SDL_Window* create(const WindowOptions& options);
-    void openDevice();
-    NoorRHI::Swapchain openSwapchain();
+    void openDevice(const NoorRHI::ExtensionProvider* extensions);
+    NoorRHI::Swapchain openSwapchain(const NoorRHI::ExtensionProvider* extensions);
     //! NoorRHI falls back to an opaque swapchain when the driver cannot compose alpha.
     static constexpr bool transparent = !PLATFORM_WEB;
     NoorRHI::Frame acquire();

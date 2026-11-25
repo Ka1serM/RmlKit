@@ -27,8 +27,8 @@ Application::Sdl::~Sdl() {
     SDL_Quit();
 }
 
-Application::Application()
-    : window(device, {}), rml(window), view(window, "main", [this] { running = false; }), logRoute(rml.getSystem(), getModel()),
+Application::Application(const WindowOptions& options)
+    : window(device, options), rml(window), view(window, "main", [this] { running = false; }), logRoute(rml.getSystem(), getModel()),
       linkDrag(getContext(), getModel(), window.getNative()), fileDrop(getContext(), window.getNative()), router(getContext(), getModel()),
       messageBoxes(getContext(), getModel()), logs(getModel()) {
 #ifndef NDEBUG

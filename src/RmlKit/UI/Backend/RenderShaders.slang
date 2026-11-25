@@ -23,7 +23,12 @@ float wrap(float value, float period) {
 GeometryVaryings geometryMain(uint index : SV_VertexID) {
     const RenderShaders::GeometryArguments arguments = rootArguments<RenderShaders::GeometryArguments>();
     const RenderShaders::Vertex vertex = arguments.vertices[index];
-    const float4 position = float4(vertex.x + arguments.translation.x, vertex.y + arguments.translation.y, 0.0, 1.0);
+    float4 position = float4(vertex.x + arguments.translation.x, vertex.y + arguments.translation.y, 0.0, 1.0);
+    if (arguments.snap != 0) {
+        //! The whole mesh moves by one offset, so a glyph quad lands on whole pixels and a curved mesh keeps its shape.
+        const float2 first = float2(arguments.vertices[0].x, arguments.vertices[0].y) + arguments.translation;
+        position.xy += round(first) - first;
+    }
     const float w = dot(arguments.transform[3], position);
     GeometryVaryings output;
     output.position = float4(dot(arguments.transform[0], position), dot(arguments.transform[1], position), 0.5 * w, w);
